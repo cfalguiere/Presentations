@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>DI en Clojure</title>
+
+    <meta name="description" content="DI en Clojure">
+    <meta name="author" content="Claude Falgui&egrave;re">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="../revealjs/css/reveal.min.css">
+    <link rel="stylesheet" href="../revealjs/css/theme/default.css" id="theme">
+
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="../revealjs/lib/css/zenburn.css">
+
+    <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+    <script>
+      document.write( '<link rel="stylesheet" href="../revealjs/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    </script>
+
+  </head>
+
+  <body>
+
+    <div class="reveal">
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+        <section>
+          <h1>DI en Clojure</h1>
+          <h3>Interface 21</h3>
+          <h3>18 D&eacute;cembre 2013</h3>
+           <p>
+            <small><a
+      href="https://cfalguiere.wordpress.com">Claude Falgui&egrave;re</a> / <a href="http://twitter.com/cfalguiere">@cfalguiere</a></small>
+          </p>
+        </section>
+
+	<section>
+	  <a href="#" class="image">
+            <img width="900" src="images/Perplexite.jpg" alt="Perplexit&eacute;w">
+          </a>
+       </section>
+
+        <section>
+          <h2>Complete First</h3>
+          <h2><a
+          href="http://www.opensourcesoftwarepractice.org/Git-Introduction-Part-I">Introduction
+          Part I</a></h2>
+        </section>
+
+	<section>
+	  <h3>Clone Repository</h3>
+          <pre><code data-trim contenteditable>
+git clone git@github.com:ossp/Git-Branchy-Story-Exercise-02.git
+          </code></pre>
+          <ul>
+            <li>github username = "ossp"
+            <li>repository name = "Branchy-Story-Exercise-02"
+          </ul>
+        </section>
+
+         <section>
+          <h3>Go Inside the Directory</h3>
+          <pre><code data-trim contenteditable>
+cd Branchy-Story-Exercise-02
+          </code></pre>
+        </section>
+
+        <section>
+          <h3>See the remote repositories </h3>
+          <pre><code data-trim contenteditable>
+git remote -v
+          </code></pre>
+          <ul>
+            <li>"-v" is for "verbose"
+          </ul>
+        </section>
+
+ 
+
+
+ 
+  
+      </div>
+
+    </div>
+
+    <script src="../revealjs/lib/js/head.min.js"></script>
+    <script src="../revealjs/js/reveal.min.js"></script>
+
+    <script>
+
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+        // Optional libraries used to extend on reveal.js
+        dependencies: [
+          { src: '../revealjs/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: '../revealjs/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../revealjs/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../revealjs/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: '../revealjs/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+          { src: '../revealjs/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>

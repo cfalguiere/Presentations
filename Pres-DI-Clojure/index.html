@@ -45,21 +45,35 @@
 
 	<section>
 	  <a href="#" class="image">
-            <img width="900" src="images/Perplexite.jpg" alt="Perplexit&eacute;w">
+            <img src="images/Perplexite.jpg" alt="Perplexit&eacute;w">
           </a>
        </section>
 
         <section>
-          <h2>Complete First</h3>
-          <h2><a
-          href="http://www.opensourcesoftwarepractice.org/Git-Introduction-Part-I">Introduction
-          Part I</a></h2>
+          Since a Clojure program is composed (mostly) of functions, not objects, dynamic rebinding of functions replaces a good deal of what a DI framework would do for testing purposes.
         </section>
 
 	<section>
+	In many object-oriented languages, dependency injection is a way to decouple a class from other objects upon which that class depends. Instead of an object initializing other objects internally, it accepts those objects as parameters that are often automagically supplied by the runtime or application container that is hosting your program.
+In a static language like Java, this is accomplished by programming to
+	interfaces rather than concrete classes.
+	</section>
+	
+	<section>
 	  <h3>Clone Repository</h3>
           <pre><code data-trim contenteditable>
-git clone git@github.com:ossp/Git-Branchy-Story-Exercise-02.git
+user=> (defn crawl [url]
+  #_=>   ;; would now make http connection and download content
+  #_=>   "data from the cloud")
+#'user/crawl
+user=> (defn -main [& args]
+  #_=>   (crawl "http://www.google.com"))
+#'user/-main
+user=> (-main)
+"data from the cloud"
+user=> (with-redefs [crawl (fn [url] "fake data")]
+  #_=>   (-main))
+"fake data"
           </code></pre>
           <ul>
             <li>github username = "ossp"
@@ -67,28 +81,410 @@ git clone git@github.com:ossp/Git-Branchy-Story-Exercise-02.git
           </ul>
         </section>
 
-         <section>
-          <h3>Go Inside the Directory</h3>
-          <pre><code data-trim contenteditable>
-cd Branchy-Story-Exercise-02
-          </code></pre>
-        </section>
+	  <section>
+	  <pre><code>
+In Clojure you usually achieve the equivalent of dependency injection with alternative methods:
 
-        <section>
-          <h3>See the remote repositories </h3>
-          <pre><code data-trim contenteditable>
-git remote -v
-          </code></pre>
-          <ul>
-            <li>"-v" is for "verbose"
-          </ul>
-        </section>
+Dynamic binding - e.g. useful for redirecting standard output in test functions by doing (binding [*out* some-writer-object] ...)
+Higher order functions - can be used to provide a form of dependency injection by passing other functions as parameters
+Configuration with data - it's fairly idiomatic in Clojure to pass around maps which contain configuration parameters (or even functions to configure custom behaviour).
+All of these are integral to the language itself. So you definitely
+don't need anything like a "DI framework". IMHO, needing a framework
+for DI is really just compensating for a lack of sufficient features
+in the language itself.
+</code></pre>
+	  </section>
 
- 
+	  <section>
+	  I don't see a need for dependency injection here. Here's how I think I'd tackle this problem whilst maintaining testability: separate out the implementation into a minimum of two functions. One function fetches and returns the webpage, and the other parses the response. In your main function, you'd have something like (-> "http://google.com" fetch parse).
+
+Then, to test parse, you can simply bypass the fetch method and feed fake webpage data directly into the parse method.
+
+(deftest test
+     (is (= {:something "blah"} (parse "<html><head><title>Fake webpage etc..</title></head></html>"))))
+So long as you're careful about breaking down problems into clear functions, I don't think you need anything sophisticated like DI to test.
+
+I'm new to Clojure, so I'm not familiar with the macros and techniques mentioned by others in here, but the above methodology has served me fine thus far.
+	  </section>
+
+	  <section>
+	  Isolating external dependencies helps make testing easier. 
+	  </section>
+
+	  <section>
+	  Redefining functions
+
+We can redefine vars and hence functions in a limited scope with with-redefs
+
+The documentation suggests its usefulness in testing:
+
+Useful for mocking out functions during testing.
+
+Lets look at an example where we want to isolate a function that logs to file:
+
+1
+2
+3
+(defn log-fn [] #(spit "report.xml" %))
+
+(defn log [string] ((log-fn) string))
+And the test removing the dependency on the filesytem:
+
+1
+2
+(with-redefs [log-fn (fn [data] data)]
+  (log "hello"))
+Its important to note that with-redefs are visible in all threads and it does not play well with concurrency:
+with-redefs can permanently change a var if applied concurrently:
+	  </section>
+
+<section>
+Redefining Dynamic Vars
+
+Using dynamic vars we can rebind the value and hence we can use this as an injection point. Again if we can rebind vars we can rebind functions. Note though that we have to mark those functions as dynamic:
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+;The real http request
+(defn ^:dynamic http-get-request [url] http/get url)
+(defn get [url] (http-get-request [url]))
+
+(defn fake-http-get [url] "{}")
+
+(fact "make a http get request"
+  (binding [http-get-request fake-http-get]
+    (get "/some-resource")) => "{}"))
+Unlike alter-var-root and with-redefs dynamic vars are bound at a thread-local level. So the stubbings would only be visible in that thread. Which makes this safe for tests being run concurrently!
+</section>
+
+<secion>
+Midje
+
+The Midje testing framework provides stubbing methods through provided. In the core of Midje this uses our previously visited alter-var-root.
+
+Lets see how our example would look using Midje:
+
+The code:
+
+1
+2
+3
+(defn log-fn [] #(spit "report.xml" %))
+
+(defn log [string] ((log-fn) string))
+And our test that uses provided:
+
+1
+2
+3
+4
+(fact "it should spit out strings"
+  (log "hello") => "hello"
+  (provided
+    (log-fn) => (fn [data] data)))
+Its important to note that the provided is scoped in effect. It is only active during the form before the Midje “=>” assertion arrow.
+
+Conceptually think of it like this:
+
+1
+2
+3
+(provided
+  (log-fn) => (fn [data] (println data))
+  (captured-output (log "hello"))) => (contains "hello")
+
+</section>
+
+<section>
+Higher order functions
+
+We can isolate dependencies by passing in functions which wrap that dependency. This abstracts the details of the dependency and provides a point where we can inject our own functions which bypasses the dependency.
+
+For example:
+
+1
+2
+3
+(defn extract-urn [data]
+  (let [urn-getter #(:urn data)]
+ (do-it urn-getter)))
+In our tests:
+
+1
+  (do-it (fn [] 10))
+Simple and beautiful.
+</section>
+
+<section>
+substituting namespace
+(ns example
+  (:require [cache.memcache :as memcache]))
+
+(when (= (System/getenv "ENV") "TEST")
+  (ns-unalias 'example 'memcache)
+  (require 'test.cache.fake)
+  (alias 'memcache 'test.cache.fake))
+
+(defn get [arg]
+  (memcache/get arg))
+</section>
+
+<section>
+Runtime Polymorphism
+
+Switch behaviour based on a the type of an argument. During testing we can inject a specific type which will behave differently from the real system.
+
+Clojure gives us protocols and multimethods to achieve this:
+
+Protocols
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+(:require [[fake-service :as fake]
+           [service      :as service]])
+
+(defprotocol Service
+  (do-get [this arg]))
+
+(deftype FakeService []
+  Service
+  (do-get [this arg] (fake/do-get arg)))
+
+(deftype RealService []
+  Service
+  (do-get [this arg] (service/do-get arg)))
+And in our test:
+
+1
+(do-get (FakeService.) "cheshire")
+Multimethods
+
+Similar we can use the type of arguments to indicate different behaviour.
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+(:require [[fake-service :as fake]
+           [service      :as service]])
+
+(defmulti do-get (fn [service param] [(:Service service) param]))
+
+(defmethod do-get [:FakeService] [service param]
+  (fake/do-get param))
+
+(defmethod do-get [:RealService] [service param]
+  (service/do-get param))
+And in our test:
+
+1
+(do-get (FakeService.) "rabbit")
+
+</section>
+
+<section>
+changer le param&eacute;trage au runtime
+(defn init! []
+  (case (System/getenv "ENV")
+    "TEST"
+    (do
+      (def get [key]       (fake/get key))
+      (def set [key value] (fake/set key value))
+    ;; else
+    (do
+      (def get [key]       (memcache/get key))
+      (def set [key value] (memcache/set key value))))))
+</section>
+
+	  <section>
+	  Because of Java's OO and type system, dynamically switching between different underlying implementations (for test (mocking) purposes for instance) can be difficult to manage. Libraries like Google Guice are intended to handle these dependency injections in Java more gracefully.
+
+In Clojure and other functional languages functions can be passed around, which makes using different implementations much easier.
+
+There's several ways this can be done in Clojure:
+
+Using your choice of function as parameters in higher order functions.
+(Re)Binding your choice of function to a var.
+Encapsulating your choice of function inside closures that can then be passed around and called.
+Chapter 12 of Clojure Programming has some nice examples of OO patterns like dependency injection and the alternative ways to handle these in Clojure.
+
+Sean Devlin also has a Full Disclojure video on Dependency Injection in Clojure. His example might have been chosen better, though. Instead of using completely different function implementations in his closure, he uses a factory that returns different 'versions' of a function. The gist stays the same though.
+
+Basically, dependency injection is a pattern that is a necessary evil in OOP, and can be solved easily (or is not even a problem) in FP.
+	  </section>
+
+<section>
+The Purest form of isolation
+
+Passing a function, functions that wrap our dependencies means we do not have to mutate the code under test. This is the ideal form of isolating. This is where we want to be.
+
+But sometimes either aesthetics or control might make us look elsewhere.
+
+Functions with many parameters can become ugly and cumbersome to use.
+
+Using external libraries where we cannot have design the way we want it (though we can try by wrapping the heck out of any library).
+
+Finally integration tests are hard if not impossible to do with this form of dependency isolation.
 
 
- 
-  
+</section>
+<section>
+The Aesthetic small touch form of isolation
+
+var-alter-root is (very) scary, but the guard rails of Midje make it an easy way to isolate dependencies. It also supports flexibility in how we stub functions based on the arguments they are called with (or completely ignore the arguments). This flexibility is extremely powerful and is a big plus for Midjes provided.
+</section>
+<section>
+The Simple small touch form of isolation
+
+While Midje provides lots of power and flexibly it does so at the cost of slightly awkward syntax and a lot of crazy macros (I say this having stared into the heart of Midje). For example parallel functions do not work with provided.
+
+with-redefs, binding and var-alter-root provide flexibly to handle different testing scenarios. and no prior knowledge of an external tool is required.
+
+If you don’t need the power of Midje or fear its complexity you can
+happily use nothing but Clojure’s standard library. Maybe you will
+even learn something about how Clojure works!
+</section>
+<section>
+The Crazy Large touch form of isolation
+
+Namespace switching is a shortcut to having to stub out every single method. In one sweep we redefine all the functions of a namespace. This might be more useful for integration tests than unit tests.
+
+That shortcut does come at a cost, we still have to maintain our fake ns every time something changes in the real namespace and our production code is left wrapped in ns-resolve or a ugly switch based on Environment settings. Ugly!
+
+I don’t recommend using this form of isolation regularly but in edge cases it can be very convenient, though people will still think you are crazy.
+
+
+</section>
+
+<section>
+DI containers provide a graphs of logic coupled with
+state - the state being the instances of the collaborators (i.e. "I will
+have ConsumerA with an instance of SimpleServiceA please"). Clojure has
+very strong opinions about how to manage state.
+
+2) to provide a 'get-ds' accessor which returns a new instance and rely on
+passing that service along to every function that needs it?
+
+Option 2 means functions are still pure, but how do you prevent huge lists
+of services - i.e. if func-a calls func-b which calls func-c and func-c
+needs service-a then func-a and func-b need to access service-a. Yuck. It
+also means the main entry point to my application needs to assemble all of
+these services up in one go.
+
+A good question. One way is to use partial application to bake the data
+source into a fn:
+
+(def read (partial read-from-db *data-source*))
+
+The way I've been doing DI like stuff is with Prismatic's graph[2] and
+similar libraries. While graph doesn't explicitly say it is a DI
+library it certainly is solving the same problem. What is interesting
+about graph is how small it is and how it can solve problems in the
+large (like an application) but also on a much smaller scale (e.g.
+computations with a handful of functions). While graph's approach may
+not be as powerful as the huge DI frameworks in Java (I'm assuming, I
+haven't used them personally much) I think you can get 90% of the value
+with 1% of the code. I've been using a graph-like library for a number
+of months in my more complex applications and it has been fantastic.
+
+As of version 0.0.3 this has been deprecated in favour of something like
+your second option - now you pass an explicit db parameter to each
+function, where 'db' can be a db connection specification, or an explicit
+connection already created from a with-transaction macro, or a number of
+other alternatives. It's worth having a look through the source:
+https://github.com/clojure/java.jdbc/blob/165c9d2c3151a244e5a323e817edba970f6bfbb5/src/main/clojure/clojure/java/jdbc.clj#L139
+
+Even with the old API we used a
+function in a specific namespace that returned the data source (in
+fact it returned a pooled data source, using c3p0). Behind the scenes,
+we actually use an atom to provide a cached, singleton instance.
+with-redefs allows us to mock that for testing, if needed :)
+
+Clojure makes me think about my dependencies and organize them in a
+very clean top-to-bottom tree, with very clear divisions between
+subsystems. In the OO world, DI makes you sloppy... You can have
+circular dependencies. You can easily add whatever dependencies you
+need. You don't have to think about it, you can work around problems
+that crop up.
+
+I guess my (rambling) point is to reiterate that it is very easy to plaster
+over symptoms/effects using the very powerful framework beasts. The lack
+of them forces you to think, and hopefully remove the cause.
+
+This is one of the reasons we created graph:
+
+https://github.com/prismatic/plumbing
+
+which is a general declarative mechanism for describing complex function
+compositions. There's not an awesome public example yet, but we use Graph
+at Prismatic to build our production services, where each node builds a
+single component of a service, based on other named other components and
+parameters. This ends up looking somewhat similar to dependency injection,
+although the details are rather different. Basically you get the
+advantages of your second option (no global state), but hopefully without
+the 'yuck'.
+
+</section>
+
+<section>
+Stick to non side-effecting or pure functions of their parameters (verbs) as much as possible except at the topmost levels of your abstractions. You can organize those functions however you like. At the topmost levels you will have some application state, there are many approaches to manage that, but the one I use the most is to hide these top-level services under a clojure protocol, then implement it in a clojure record (which may hold references to database connections or some-such).
+This approach maximizes flexibility and prevents you from writing
+yourself into a corner. It's analagous to java's dependency
+injection. Stuart Sierra did a good talk recently on these topics at
+Clojure/West 2013, but the video is not yet available.
+</section>
+
+<section>
+Note the difference from your approach. You need to separate the management and resolution of objects from their lifecycles. Tying them to namespaces is quick for access, but it means any functions you write as clients that use that code are now accessing global state. With protocols, you can separate the implementation detail of global state from the interface of access.
+
+If you need a motivating example of why this is useful, consider, how
+would you intercept all access to a service that's globally
+accessible? Well, you would push the full implementation down and make
+the entry point a wrapper function, instead of pushing the relevant
+details closer to the client code. What if you wanted some behavior
+for some clients of the code and not others? Now you're stuck. This is
+just anticipating making those inevitable trade-offs preemptively and
+making your life easier.
+</section>
+
+<section>
+integration de libs java ?
+</section>
+
+<section>
+There are two libraries currently in development (as of Oct '12):
+Prismatic's Graph (not yet open sourced) and Flow by Stuart Sierra.
+It provides a framework for application configuration /
+modularization.
+In any case, some Clojure applications have (apparently) become large
+enough to necessitate frameworks like this.
+plus Jig
+</section>
+
       </div>
 
     </div>

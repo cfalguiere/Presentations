@@ -2,7 +2,7 @@
   (:use [test1.core])
   (:use [midje.sweet]))
 
-(fact "it should spit out strings"
-  (log "hello") => "hello"
+(fact "it should display This is a"
+  (pretty-printer "Bob") => "This is a fake value"
   (provided
-    (write-log) => (fn [data] data)))  ;; echo stub
+   (finder) => (fn [key] "fake value") )) ;; test stub

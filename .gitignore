@@ -10,3 +10,6 @@ pom.xml
 .lein-failures
 
 */data.log
+
+*/.DS_Store
+

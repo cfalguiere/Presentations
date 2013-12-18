@@ -176,13 +176,24 @@
 </code></pre>
 	</section>
 
+	  <section>
+	  <h3>Configuration</h3>
+	  <pre><code>
+(defn finder [dbname key] (str "value from db " dbname)) 
+(defn pretty-printer [finder key] (str "This is a " (finder key)))
+
+(defn -main [& args]
+  (let [dbname "DBProd"
+	printer (partial pretty-printer (partial finder dbname))]  
+   (printer "Alice") ))
+ </code></pre>
+	  <pre><code>
+lein run
+"This is a value from the db DBProd"
+</code>
+	  </section>
 	<!-- notes -->
 
-	<section>
-	In many object-oriented languages, dependency injection is a way to decouple a class from other objects upon which that class depends. Instead of an object initializing other objects internally, it accepts those objects as parameters that are often automagically supplied by the runtime or application container that is hosting your program.
-In a static language like Java, this is accomplished by programming to
-	interfaces rather than concrete classes.
-	</section>
 	
 
 	  <section>

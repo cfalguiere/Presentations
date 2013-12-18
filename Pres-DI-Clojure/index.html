@@ -49,9 +49,127 @@
           </a>
        </section>
 
-        <section>
-          Since a Clojure program is composed (mostly) of functions, not objects, dynamic rebinding of functions replaces a good deal of what a DI framework would do for testing purposes.
-        </section>
+	<!-- tests - Midge -->
+	<section>
+	<h3>Stubs pour les tests : Midje</h3>
+	<ul>
+	  <li>utilise &nbsp;<code>alter-var-root</code></li>
+	  <li>scope r&eacute;duit</li>
+	</ul>
+<!-- TODO revoir l'exemple 
+	remplacer fichier par text, renommer les fonctions -->	  
+<pre><code>
+(defn finder [] #(str "value from db with " %)) ;; fonction de
+	recherche tr&egrave; complexe
+(defn pretty-printer [key] (str "This is a " ((finder) key) ))
+</code></pre>
+<pre><code>;; test Midge
+(fact "it should display This is a"
+  (pretty-printer "Bob") => "This is a fake value"
+  (provided
+   (finder) => (fn [key] "fake value") )) ;; test stub
+</code></pre>
+
+	</section>
+
+	<section>
+	<h3>Dynamic rebinding</h3>
+	<ul>
+	  <li>with-redefs / alter-var-root / binding
+	</uL>
+	<pre><code>user=> (def w 1)
+user=> (with-redefs [w 2] w)  
+2
+user=> w
+1
+</code></pre>
+	<pre><code>user=> (def x 4)
+user=> x
+4
+user=> (alter-var-root #'x inc) ;; atomique
+user=> x
+5
+</code></pre>
+	<pre><code>user=> (def ^:dynamic y 2)
+user=> (binding [y 3] y) ;; thread local
+3
+user=> y
+2
+</code></pre>
+	</section>
+
+	<section>
+	<h3>Dynamic rebinding de fonctions</h3>
+<pre><code>(defn ^:dynamic finder [key] (str "value from the db")) 
+(defn pretty-printer [key] (str "This is a " (finder key) )) 
+
+;;test
+(defn fake-finder [key] "fake value")
+
+(fact "it should use the fake finder"
+  (binding [finder fake-finder] 
+      (pretty-printer "Bob")) => "This is a fake value")
+</code></pre>
+	</section>
+
+	<!-- refactoring du mauvais design - isoler -->
+
+
+	<section>
+	<h3>Refactoring</h3>
+	<ul>
+	  <li>Higher order functions -> injecter des fonctions
+	</ul>
+<pre><code>
+(defn finder [key] (str "value from the db")) 
+(defn pretty-printer [key finder] (str "This is a " (finder key) ))
+(defn -main [& args]
+  (pretty-printer "Alice" finder))
+</code></pre>
+<pre><code>
+(defn fake-finder [key] "fake value")
+(fact "it should display This is a"
+      (pretty-printer "Bob" fake-finder) => "This is a fake value")
+</code></pre>
+	</section>
+
+	<section>
+	<h3>Refactoring</h3>
+	<ul>
+	  <li> Faut il vraiment de l'injection de d&eacute;pedance ?
+	</ul>
+<pre><code>
+(defn finder [key] (str "value from the db")) ;; very complex finder
+(defn pretty-printer [value] (str "This is a " value)) 
+
+(defn -main [& args]
+  (pretty-printer (finder "Alice"))
+</code></pre>
+<pre><code>
+(fact "it should display This is a"
+      (pretty-printer "fake value") => "This is a fake value")
+<pre><code>
+	</section>
+
+	<section>
+	<h3>Wiring par une application partielle</h3>
+	<ul>
+	  <li> Faut il vraiment de l'injection de d&eacute;pedance ?
+	</ul>
+<pre><code>
+(defn finder [key] (str "value from the db")) ;; very complex finder
+(defn pretty-printer [value] (str "This is a " value)) 
+
+(defn -main [& args]
+  (pretty-printer (finder "Alice"))
+</code></pre>
+<pre><code>
+(fact "it should display This is a"
+      (pretty-printer "fake value") => "This is a fake value")
+<pre><code>
+	</section>
+
+	<!-- notes -->
 
 	<section>
 	In many object-oriented languages, dependency injection is a way to decouple a class from other objects upon which that class depends. Instead of an object initializing other objects internally, it accepts those objects as parameters that are often automagically supplied by the runtime or application container that is hosting your program.
@@ -59,35 +177,16 @@ In a static language like Java, this is accomplished by programming to
 	interfaces rather than concrete classes.
 	</section>
 	
-	<section>
-	  <h3>Clone Repository</h3>
-          <pre><code data-trim contenteditable>
-user=> (defn crawl [url]
-  #_=>   ;; would now make http connection and download content
-  #_=>   "data from the cloud")
-#'user/crawl
-user=> (defn -main [& args]
-  #_=>   (crawl "http://www.google.com"))
-#'user/-main
-user=> (-main)
-"data from the cloud"
-user=> (with-redefs [crawl (fn [url] "fake data")]
-  #_=>   (-main))
-"fake data"
-          </code></pre>
-          <ul>
-            <li>github username = "ossp"
-            <li>repository name = "Branchy-Story-Exercise-02"
-          </ul>
-        </section>
 
 	  <section>
 	  <pre><code>
 In Clojure you usually achieve the equivalent of dependency injection with alternative methods:
 
-Dynamic binding - e.g. useful for redirecting standard output in test functions by doing (binding [*out* some-writer-object] ...)
 Higher order functions - can be used to provide a form of dependency injection by passing other functions as parameters
-Configuration with data - it's fairly idiomatic in Clojure to pass around maps which contain configuration parameters (or even functions to configure custom behaviour).
+Configuration with data - it's fairly idiomatic in Clojure to pass
+around maps which contain configuration parameters (or even functions
+to configure custom behaviour).
+
 All of these are integral to the language itself. So you definitely
 don't need anything like a "DI framework". IMHO, needing a framework
 for DI is really just compensating for a lack of sufficient features
@@ -111,47 +210,11 @@ I'm new to Clojure, so I'm not familiar with the macros and techniques mentioned
 	  Isolating external dependencies helps make testing easier. 
 	  </section>
 
-	  <section>
-	  Redefining functions
-
-We can redefine vars and hence functions in a limited scope with with-redefs
-
-The documentation suggests its usefulness in testing:
-
-Useful for mocking out functions during testing.
-
-Lets look at an example where we want to isolate a function that logs to file:
-
-1
-2
-3
-(defn log-fn [] #(spit "report.xml" %))
-
-(defn log [string] ((log-fn) string))
-And the test removing the dependency on the filesytem:
-
-1
-2
-(with-redefs [log-fn (fn [data] data)]
-  (log "hello"))
-Its important to note that with-redefs are visible in all threads and it does not play well with concurrency:
-with-redefs can permanently change a var if applied concurrently:
-	  </section>
 
 <section>
 Redefining Dynamic Vars
 
-Using dynamic vars we can rebind the value and hence we can use this as an injection point. Again if we can rebind vars we can rebind functions. Note though that we have to mark those functions as dynamic:
 
-1
-2
-3
-4
-5
-6
-7
-8
-9
 ;The real http request
 (defn ^:dynamic http-get-request [url] http/get url)
 (defn get [url] (http-get-request [url]))
@@ -164,41 +227,7 @@ Using dynamic vars we can rebind the value and hence we can use this as an injec
 Unlike alter-var-root and with-redefs dynamic vars are bound at a thread-local level. So the stubbings would only be visible in that thread. Which makes this safe for tests being run concurrently!
 </section>
 
-<secion>
-Midje
-
-The Midje testing framework provides stubbing methods through provided. In the core of Midje this uses our previously visited alter-var-root.
-
-Lets see how our example would look using Midje:
-
-The code:
-
-1
-2
-3
-(defn log-fn [] #(spit "report.xml" %))
-
-(defn log [string] ((log-fn) string))
-And our test that uses provided:
-
-1
-2
-3
-4
-(fact "it should spit out strings"
-  (log "hello") => "hello"
-  (provided
-    (log-fn) => (fn [data] data)))
-Its important to note that the provided is scoped in effect. It is only active during the form before the Midje “=>” assertion arrow.
-
-Conceptually think of it like this:
-
-1
-2
-3
-(provided
-  (log-fn) => (fn [data] (println data))
-  (captured-output (log "hello"))) => (contains "hello")
+<section>
 
 </section>
 
@@ -469,6 +498,47 @@ details closer to the client code. What if you wanted some behavior
 for some clients of the code and not others? Now you're stuck. This is
 just anticipating making those inevitable trade-offs preemptively and
 making your life easier.
+</section>
+
+<section>
+I had a similar problem with some gui code, what I ended up doing is,
+
+(defn- frame [args]
+  ((resolve 'project.gui/frame) args))
+This allowed me to resolve the call during runtime, this gets called
+  from a menu item in frame so I was 100% sure frame was defined
+  because it was being called from the frame itself, keep in mind that
+  resolve may return nil.
+</section>
+
+<section>
+separating configuration from use.
+
+ow to wire together different elements: how do you fit together this
+web controller architecture with that database interface backing when
+they were built by different teams with little knowledge of each
+other.
+
+In my book P of EAA, we described this situation as a Plugin. The implementation class for the finder isn't linked into the program at compile time, since I don't know what my friends are going to use. Instead we want my lister to work with any implementation, and for that implementation to be plugged in at some later point, out of my hands. The problem is how can I make that link so that my lister class is ignorant of the implementation class, but can still talk to an instance to do its work.
+</section>
+
+<section>
+The question, is what aspect of control are they inverting? When I first ran into inversion of control, it was in the main control of a user interface. Early user interfaces were controlled by the application program. You would have a sequence of commands like "Enter name", "enter address"; your program would drive the prompts and pick up a response to each one. With graphical (or even screen based) UIs the UI framework would contain this main loop and your program instead provided event handlers for the various fields on the screen. The main control of the program was inverted, moved away from you to the framework.
+</section>
+
+<section>
+The basic idea of the Dependency Injection is to have a separate
+object, an assembler, that populates a field in the lister class with
+an appropriate implementation for the finder interface, resulting in a
+dependency diagram along the lines of Figure 2
+Construction,Setter, interface
+</section>
+
+<section>
+The basic idea behind a service locator is to have an object that
+knows how to get hold of all of the services that an application might
+need. So a service locator for this application would have a method
+that returns a movie finder when one is needed.
 </section>
 
 <section>

@@ -4,6 +4,10 @@
 (defn pretty-printer [value] (str "This is a " value)) 
 
 
+;;(defn -main [& args]
+;;  (pretty-printer (finder "Alice"))
+ 
 (defn -main [& args]
-  (pretty-printer (finder "Alice"))
+  (let [value (finder "Alice")]
+	(pretty-printer value) )) 
  

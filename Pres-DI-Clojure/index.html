@@ -224,10 +224,7 @@ lein run
 	  <ul>
 	    <li>Protocol
 	    </ul>
-	  <pre><code>
-(ns test8.core
-  (:use [test8 finder fake]) )
-
+	  <pre><code>;; core
 (defprotocol Finder (finder [this arg]))
 
 (deftype FakeFinder [] Finder
@@ -239,16 +236,16 @@ lein run
 (defn pretty-printer [value] (str "This is a "  value))
 
 (defn -main [& args]
-   (pretty-printer (finder (FakeFinder.) "Alice") ))
+  (pretty-printer (finder (FakeFinder.) "Alice") ))
 </code></pre>
-<pre><code>
-(ns test8.finder)
-(defn db-finder [key] (str "value from db")) 
-</pre></code>
-<pre><code>
+<pre><code>;; fake module
 (ns test8.fake)
 (defn fake-finder [key] "fake value")
 </pre></code>
+<pre><code>lein run
+"This is a fake value"
+</pre></code>
+
 
 	   
 	  

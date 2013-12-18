@@ -53,15 +53,14 @@
 	<section>
 	<h3>Usages en Java</h3>
 	<ul>
-	  <li>mocks pour les tests</li>
+	  <li>mocker pour les tests</li>
+	  <li>d&eacute;coupler, modulariser</li>
+	  <li>assembler des composants qui ne se connaissent pas</li>
 	  <li>isoler la configuration</li>
-	  <li>d&eacute;couplage, modularit&eacute;
-	  <li>assembler des composants qui ne se connaissent pas</i>
-	  <li>architecture Spring</li>
-	  </ul>
+	</ul>
        </section>
 
-	<!-- tests - Midge -->
+	<!-- tests - Midje -->
 	<section>
 	<h3>Stubs pour les tests - Midje</h3>
 	<ul>
@@ -245,141 +244,38 @@ lein run
 <pre><code>lein run
 "This is a fake value"
 </pre></code>
-
-
-	   
-	  
 	  </section>
+
+	    <section>
+	    <h3>Frameworkds</h3>
+	    <ul>
+	      <li>Graph
+	      <li>Flow
+	      </ul>
+	    </section>
+
+	    <section>
+	    <h3>Graph</h3>
+	    <ul>
+	      <li>Prismatic
+	      <li> open source ?
+	      </ul>
+	    </section>
+
+	    <section>
+	    <h3>Flow </h3>
+	      <ul>
+		<li>
+		</ul>
+	    </section>
+		
 	<!-- notes -->
 
 
-<section>
-Runtime Polymorphism
-
-Switch behaviour based on a the type of an argument. During testing we can inject a specific type which will behave differently from the real system.
-
-Clojure gives us protocols and multimethods to achieve this:
-
-Protocols
-
-(:require [[fake-service :as fake]
-           [service      :as service]])
-
-(defprotocol Service
-  (do-get [this arg]))
-
-(deftype FakeService []
-  Service
-  (do-get [this arg] (fake/do-get arg)))
-
-(deftype RealService []
-  Service
-  (do-get [this arg] (service/do-get arg)))
-And in our test:
-
-1
-(do-get (FakeService.) "cheshire")
-Multimethods
-
-Similar we can use the type of arguments to indicate different behaviour.
-
-(:require [[fake-service :as fake]
-           [service      :as service]])
-
-(defmulti do-get (fn [service param] [(:Service service) param]))
-
-(defmethod do-get [:FakeService] [service param]
-  (fake/do-get param))
-
-(defmethod do-get [:RealService] [service param]
-  (service/do-get param))
-And in our test:
-
-1
-(do-get (FakeService.) "rabbit")
-
-</section>
 
 
-	  <section>
-	  Because of Java's OO and type system, dynamically switching between different underlying implementations (for test (mocking) purposes for instance) can be difficult to manage. Libraries like Google Guice are intended to handle these dependency injections in Java more gracefully.
-
-In Clojure and other functional languages functions can be passed around, which makes using different implementations much easier.
-
-There's several ways this can be done in Clojure:
-
-Using your choice of function as parameters in higher order functions.
-(Re)Binding your choice of function to a var.
-Encapsulating your choice of function inside closures that can then be passed around and called.
-Chapter 12 of Clojure Programming has some nice examples of OO patterns like dependency injection and the alternative ways to handle these in Clojure.
-
-Sean Devlin also has a Full Disclojure video on Dependency Injection in Clojure. His example might have been chosen better, though. Instead of using completely different function implementations in his closure, he uses a factory that returns different 'versions' of a function. The gist stays the same though.
-
-Basically, dependency injection is a pattern that is a necessary evil in OOP, and can be solved easily (or is not even a problem) in FP.
-	  </section>
-
-<section>
-The Purest form of isolation
-
-Passing a function, functions that wrap our dependencies means we do not have to mutate the code under test. This is the ideal form of isolating. This is where we want to be.
-
-But sometimes either aesthetics or control might make us look elsewhere.
-
-Functions with many parameters can become ugly and cumbersome to use.
-
-Using external libraries where we cannot have design the way we want it (though we can try by wrapping the heck out of any library).
-
-Finally integration tests are hard if not impossible to do with this form of dependency isolation.
 
 
-</section>
-<section>
-The Aesthetic small touch form of isolation
-
-var-alter-root is (very) scary, but the guard rails of Midje make it an easy way to isolate dependencies. It also supports flexibility in how we stub functions based on the arguments they are called with (or completely ignore the arguments). This flexibility is extremely powerful and is a big plus for Midjes provided.
-</section>
-<section>
-The Simple small touch form of isolation
-
-While Midje provides lots of power and flexibly it does so at the cost of slightly awkward syntax and a lot of crazy macros (I say this having stared into the heart of Midje). For example parallel functions do not work with provided.
-
-with-redefs, binding and var-alter-root provide flexibly to handle different testing scenarios. and no prior knowledge of an external tool is required.
-
-If you don’t need the power of Midje or fear its complexity you can
-happily use nothing but Clojure’s standard library. Maybe you will
-even learn something about how Clojure works!
-</section>
-<section>
-The Crazy Large touch form of isolation
-
-Namespace switching is a shortcut to having to stub out every single method. In one sweep we redefine all the functions of a namespace. This might be more useful for integration tests than unit tests.
-
-That shortcut does come at a cost, we still have to maintain our fake ns every time something changes in the real namespace and our production code is left wrapped in ns-resolve or a ugly switch based on Environment settings. Ugly!
-
-I don’t recommend using this form of isolation regularly but in edge cases it can be very convenient, though people will still think you are crazy.
-
-
-</section>
-
-<section>
-DI containers provide a graphs of logic coupled with
-state - the state being the instances of the collaborators (i.e. "I will
-have ConsumerA with an instance of SimpleServiceA please"). Clojure has
-very strong opinions about how to manage state.
-
-2) to provide a 'get-ds' accessor which returns a new instance and rely on
-passing that service along to every function that needs it?
-
-Option 2 means functions are still pure, but how do you prevent huge lists
-of services - i.e. if func-a calls func-b which calls func-c and func-c
-needs service-a then func-a and func-b need to access service-a. Yuck. It
-also means the main entry point to my application needs to assemble all of
-these services up in one go.
-
-A good question. One way is to use partial application to bake the data
-source into a fn:
-
-(def read (partial read-from-db *data-source*))
 
 The way I've been doing DI like stuff is with Prismatic's graph[2] and
 similar libraries. While graph doesn't explicitly say it is a DI

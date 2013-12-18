@@ -85,45 +85,65 @@
 	<ul>
 	  <li>with-redefs / alter-var-root / binding
 	</uL>
-	<pre><code>user=> (def w 1)
-user=> (with-redefs [w 2] w)  
-2
-user=> w
-1
+	<pre><code>
+(def x 1)  ;; x -> 1
+(with-redefs [x 3] x)  ;; x -> 3
 </code></pre>
-	<pre><code>user=> (def x 4)
-user=> x
-4
-user=> (alter-var-root #'x inc) ;; atomique
-user=> x
-5
+	<pre><code>
+(def y 1)  ;; y -> 1
+(alter-var-root #'y inc) ;; incr&eacute;mentation atomique
+(y) ;; y -> 2
 </code></pre>
-	<pre><code>user=> (def ^:dynamic y 2)
-user=> (binding [y 3] y) ;; thread local
-3
-user=> y
-2
+	<pre><code>
+(def ^:dynamic z 1)
+(binding [z 4] z) ;; z -> 4 temporairement pour ce thread
 </code></pre>
 	</section>
 
 	<section>
 	<h3>Dynamic rebinding de fonctions</h3>
-<pre><code>(defn ^:dynamic finder [key] (str "value from the db")) 
+<pre><code>
+(defn ^:dynamic finder [key] (str "value from the db")) 
 (defn pretty-printer [key] (str "This is a " (finder key) )) 
-
-;;test
+</code></pre>
+<pre><code>;;test
 (defn fake-finder [key] "fake value")
 
-(fact "it should use the fake finder"
-  (binding [finder fake-finder] 
-      (pretty-printer "Bob")) => "This is a fake value")
+(deftest pretty-print-with-fake
+  (is ( = "This is a fake value"
+	  (binding [finder fake-finder] ;; test stub
+	    (pretty-printer "Bob")) )))
+</code></pre>
+	</section>
+
+		<section>
+	<h3>Refactoring - d&eacute;coupler</h3>
+	<ul>
+	  <li> Faut il vraiment une d&eacute;pendance ?
+	</ul>
+<pre><code>
+(defn finder [key] (str "value from the db")) 
+(defn pretty-printer [value] (str "This is a " value)) 
+
+(defn -main [& args]
+  (pretty-printer (finder "Alice"))
+
+;; ou
+(defn -main [& args]
+  (let [value (finder "Alice")]
+	(pretty-printer value) )) 
+</code></pre>
+<pre><code>;; test
+(fact "it should display This is a"
+      (pretty-printer "fake value") => "This is a fake value")
 </code></pre>
 	</section>
 
 	<section>
 	<h3>Refactoring - d&eacute;coupler</h3>
 	<ul>
-	  <li>Higher order functions -> injecter des fonctions
+	  <li>Higher order functions
+	  <li>-> injecter des fonctions
 	</ul>
 <pre><code>
 (defn finder [key] (str "value from the db")) 
@@ -131,43 +151,28 @@ user=> y
 (defn -main [& args]
   (pretty-printer "Alice" finder))
 </code></pre>
-<pre><code>
+<pre><code>;; test
 (defn fake-finder [key] "fake value")
 (fact "it should display This is a"
       (pretty-printer "Bob" fake-finder) => "This is a fake value")
 </code></pre>
 	</section>
 
+
 	<section>
-	<h3>Refactoring &egrave- d&eacute;couplet</h3>
+	<h3>Assembler des composants</h3>
 	<ul>
-	  <li> Faut il vraiment une d&eacute;pendance ?
-	</ul>
+	  <li>application partielle (curryfication)
+	  </ul>
 <pre><code>
 (defn finder [key] (str "value from the db")) ;; very complex finder
-(defn pretty-printer [value] (str "This is a " value)) 
+(defn pretty-printer [finder key] (str "This is a " (finder key)))
+
+;; application partielle
+(def all-in-one-printer (partial pretty-printer finder)) 
 
 (defn -main [& args]
-  (pretty-printer (finder "Alice"))
-</code></pre>
-<pre><code>
-(fact "it should display This is a"
-      (pretty-printer "fake value") => "This is a fake value")
-</code></pre>
-	</section>
-
-	<section>
-	<h3>Wiring par une application partielle</h3>
-<pre><code>
-(defn finder [key] (str "value from the db")) ;; very complex finder
-(defn pretty-printer [value] (str "This is a " value)) 
-
-(defn -main [& args]
-  (pretty-printer (finder "Alice"))
-</code></pre>
-<pre><code>
-(fact "it should display This is a"
-      (pretty-printer "fake value") => "This is a fake value")
+   (all-in-one-printer "Alice"))
 </code></pre>
 	</section>
 

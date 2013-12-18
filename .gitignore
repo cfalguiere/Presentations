@@ -4,8 +4,7 @@ pom.xml
 /classes/
 /targets/
 .lein-deps-sum
-test1/data.log
-test2/data.log
-test3/data.log
-test3/src/test3/.#core.clj
-test3/test/test3/test/.#core.clj
+
+*/.#.*
+
+*/data.log

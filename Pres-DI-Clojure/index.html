@@ -49,18 +49,26 @@
           </a>
        </section>
 
+	<section>
+	<h3>Usages en Java</h3>
+	<ul>
+	  <li>mocks pour les tests</li>
+	  <li>isoler la configuration</li>
+	  <li>d&eacute;couplage, modularit&eacute;
+	  <li>assembler des composants qui ne se connaissent pas</i>
+	  <li>architecture Spring</li>
+	  </ul>
+       </section>
+
 	<!-- tests - Midge -->
 	<section>
-	<h3>Stubs pour les tests : Midje</h3>
+	<h3>Stubs pour les tests - Midje</h3>
 	<ul>
 	  <li>utilise &nbsp;<code>alter-var-root</code></li>
 	  <li>scope r&eacute;duit</li>
 	</ul>
-<!-- TODO revoir l'exemple 
-	remplacer fichier par text, renommer les fonctions -->	  
 <pre><code>
-(defn finder [] #(str "value from db with " %)) ;; fonction de
-	recherche tr&egrave; complexe
+(defn finder [] #(str "value from db with " %)) 
 (defn pretty-printer [key] (str "This is a " ((finder) key) ))
 </code></pre>
 <pre><code>;; test Midge
@@ -112,11 +120,8 @@ user=> y
 </code></pre>
 	</section>
 
-	<!-- refactoring du mauvais design - isoler -->
-
-
 	<section>
-	<h3>Refactoring</h3>
+	<h3>Refactoring - d&eacute;coupler</h3>
 	<ul>
 	  <li>Higher order functions -> injecter des fonctions
 	</ul>
@@ -134,9 +139,9 @@ user=> y
 	</section>
 
 	<section>
-	<h3>Refactoring</h3>
+	<h3>Refactoring &egrave- d&eacute;couplet</h3>
 	<ul>
-	  <li> Faut il vraiment de l'injection de d&eacute;pedance ?
+	  <li> Faut il vraiment une d&eacute;pendance ?
 	</ul>
 <pre><code>
 (defn finder [key] (str "value from the db")) ;; very complex finder
@@ -148,14 +153,11 @@ user=> y
 <pre><code>
 (fact "it should display This is a"
       (pretty-printer "fake value") => "This is a fake value")
-<pre><code>
+</code></pre>
 	</section>
 
 	<section>
 	<h3>Wiring par une application partielle</h3>
-	<ul>
-	  <li> Faut il vraiment de l'injection de d&eacute;pedance ?
-	</ul>
 <pre><code>
 (defn finder [key] (str "value from the db")) ;; very complex finder
 (defn pretty-printer [value] (str "This is a " value)) 
@@ -166,7 +168,7 @@ user=> y
 <pre><code>
 (fact "it should display This is a"
       (pretty-printer "fake value") => "This is a fake value")
-<pre><code>
+</code></pre>
 	</section>
 
 	<!-- notes -->

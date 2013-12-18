@@ -177,21 +177,35 @@
 	</section>
 
 	  <section>
-	  <h3>Configuration</h3>
+	  <h3>Configuration (currying)</h3>	
 	  <pre><code>
 (defn finder [dbname key] (str "value from db " dbname)) 
 (defn pretty-printer [finder key] (str "This is a " (finder key)))
 
-(defn -main [& args]
-  (let [dbname "DBProd"
-	printer (partial pretty-printer (partial finder dbname))]  
+(defn -main [dbname]
+  (let [printer (partial pretty-printer (partial finder dbname))]  
    (printer "Alice") ))
  </code></pre>
 	  <pre><code>
-lein run
+lein run DBProd
 "This is a value from the db DBProd"
 </code>
 	  </section>
+
+<section>
+	  <h3>Configuration (variables)</h3>
+	  <pre><code>
+(def config { :dbname "DBProd" }) 
+
+(defn finder [key] (str "value from db " (config :dbname))) 
+(defn pretty-printer [finder key] (str "This is a " (finder key)))
+
+(defn -main [& args]
+  (let [printer (partial pretty-printer finder)]  
+   (printer "Alice") ))
+ </code></pre>
+</section>
+
 	<!-- notes -->
 
 	

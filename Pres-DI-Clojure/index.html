@@ -39,8 +39,9 @@
           <h3>18 D&eacute;cembre 2013</h3>
            <p>
             <small><a
-      href="https://cfalguiere.wordpress.com">Claude Falgui&egrave;re</a> / <a href="http://twitter.com/cfalguiere">@cfalguiere</a></small>
+      href="https://cfalguiere.wordpress.com">Claude  &nbsp;Falgui&egrave;re</a>  &nbsp;/ &nbsp; <a href="http://twitter.com/cfalguiere">@cfalguiere</a></small>
           </p>
+	  <p> <small> exemples &nbsp;<a href="https://github.com/cfalguiere/Clojure-di-demo">https://github.com/cfalguiere/Clojure-di-demo</a></small></p>
         </section>
 
 	<section>
@@ -177,7 +178,10 @@
 	</section>
 
 	  <section>
-	  <h3>Configuration (currying)</h3>	
+	  <h3>Configuration</h3>
+	  <ul>
+	    <li> &eacute;quivalent de factories par currying
+	  </ul>
 	  <pre><code>
 (defn finder [dbname key] (str "value from db " dbname)) 
 (defn pretty-printer [finder key] (str "This is a " (finder key)))
@@ -189,13 +193,17 @@
 	  <pre><code>
 lein run DBProd
 "This is a value from the db DBProd"
-</code>
+</code></pre>
 	  </section>
 
 <section>
-	  <h3>Configuration (variables)</h3>
+	  <h3>Configuration (data structure)</h3>
+	  <ul>
+	    <li> partage de la configuration
+            <li>alt&eacute;rable par les factories 
+	  </ul>
 	  <pre><code>
-(def config { :dbname "DBProd" }) 
+(def config { :dbname "DBProduits" }) 
 
 (defn finder [key] (str "value from db " (config :dbname))) 
 (defn pretty-printer [finder key] (str "This is a " (finder key)))
@@ -204,98 +212,49 @@ lein run DBProd
   (let [printer (partial pretty-printer finder)]  
    (printer "Alice") ))
  </code></pre>
+	  	  <pre><code>
+lein run
+"This is a value from the db DBProduits"
+</code></pre>
+
 </section>
 
+	  <section>
+	  <h3>Polymorphisme</h3>
+	  <ul>
+	    <li>Protocol
+	    </ul>
+	  <pre><code>
+(ns test8.core
+  (:use [test8 finder fake]) )
+
+(defprotocol Finder (finder [this arg]))
+
+(deftype FakeFinder [] Finder
+  (finder [this arg] (test8.fake/fake-finder arg)))
+
+(deftype RealFinder [] Finder
+  (finder [this arg] (test8.finder/db-finder arg)))
+
+(defn pretty-printer [value] (str "This is a "  value))
+
+(defn -main [& args]
+   (pretty-printer (finder (FakeFinder.) "Alice") ))
+</code></pre>
+<pre><code>
+(ns test8.finder)
+(defn db-finder [key] (str "value from db")) 
+</pre></code>
+<pre><code>
+(ns test8.fake)
+(defn fake-finder [key] "fake value")
+</pre></code>
+
+	   
+	  
+	  </section>
 	<!-- notes -->
 
-	
-
-	  <section>
-	  <pre><code>
-In Clojure you usually achieve the equivalent of dependency injection with alternative methods:
-
-Higher order functions - can be used to provide a form of dependency injection by passing other functions as parameters
-Configuration with data - it's fairly idiomatic in Clojure to pass
-around maps which contain configuration parameters (or even functions
-to configure custom behaviour).
-
-All of these are integral to the language itself. So you definitely
-don't need anything like a "DI framework". IMHO, needing a framework
-for DI is really just compensating for a lack of sufficient features
-in the language itself.
-</code></pre>
-	  </section>
-
-	  <section>
-	  I don't see a need for dependency injection here. Here's how I think I'd tackle this problem whilst maintaining testability: separate out the implementation into a minimum of two functions. One function fetches and returns the webpage, and the other parses the response. In your main function, you'd have something like (-> "http://google.com" fetch parse).
-
-Then, to test parse, you can simply bypass the fetch method and feed fake webpage data directly into the parse method.
-
-(deftest test
-     (is (= {:something "blah"} (parse "<html><head><title>Fake webpage etc..</title></head></html>"))))
-So long as you're careful about breaking down problems into clear functions, I don't think you need anything sophisticated like DI to test.
-
-I'm new to Clojure, so I'm not familiar with the macros and techniques mentioned by others in here, but the above methodology has served me fine thus far.
-	  </section>
-
-	  <section>
-	  Isolating external dependencies helps make testing easier. 
-	  </section>
-
-
-<section>
-Redefining Dynamic Vars
-
-
-;The real http request
-(defn ^:dynamic http-get-request [url] http/get url)
-(defn get [url] (http-get-request [url]))
-
-(defn fake-http-get [url] "{}")
-
-(fact "make a http get request"
-  (binding [http-get-request fake-http-get]
-    (get "/some-resource")) => "{}"))
-Unlike alter-var-root and with-redefs dynamic vars are bound at a thread-local level. So the stubbings would only be visible in that thread. Which makes this safe for tests being run concurrently!
-</section>
-
-<section>
-
-</section>
-
-<section>
-Higher order functions
-
-We can isolate dependencies by passing in functions which wrap that dependency. This abstracts the details of the dependency and provides a point where we can inject our own functions which bypasses the dependency.
-
-For example:
-
-1
-2
-3
-(defn extract-urn [data]
-  (let [urn-getter #(:urn data)]
- (do-it urn-getter)))
-In our tests:
-
-1
-  (do-it (fn [] 10))
-Simple and beautiful.
-</section>
-
-<section>
-substituting namespace
-(ns example
-  (:require [cache.memcache :as memcache]))
-
-(when (= (System/getenv "ENV") "TEST")
-  (ns-unalias 'example 'memcache)
-  (require 'test.cache.fake)
-  (alias 'memcache 'test.cache.fake))
-
-(defn get [arg]
-  (memcache/get arg))
-</section>
 
 <section>
 Runtime Polymorphism
@@ -306,19 +265,6 @@ Clojure gives us protocols and multimethods to achieve this:
 
 Protocols
 
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
 (:require [[fake-service :as fake]
            [service      :as service]])
 
@@ -340,16 +286,6 @@ Multimethods
 
 Similar we can use the type of arguments to indicate different behaviour.
 
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
 (:require [[fake-service :as fake]
            [service      :as service]])
 
@@ -367,19 +303,6 @@ And in our test:
 
 </section>
 
-<section>
-changer le param&eacute;trage au runtime
-(defn init! []
-  (case (System/getenv "ENV")
-    "TEST"
-    (do
-      (def get [key]       (fake/get key))
-      (def set [key value] (fake/set key value))
-    ;; else
-    (do
-      (def get [key]       (memcache/get key))
-      (def set [key value] (memcache/set key value))))))
-</section>
 
 	  <section>
 	  Because of Java's OO and type system, dynamically switching between different underlying implementations (for test (mocking) purposes for instance) can be difficult to manage. Libraries like Google Guice are intended to handle these dependency injections in Java more gracefully.

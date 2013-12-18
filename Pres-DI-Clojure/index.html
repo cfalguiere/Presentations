@@ -117,7 +117,7 @@
 	</section>
 
 		<section>
-	<h3>Refactoring - d&eacute;coupler</h3>
+	<h3>Refactorer - d&eacute;coupler</h3>
 	<ul>
 	  <li> Faut il vraiment une d&eacute;pendance ?
 	</ul>
@@ -140,7 +140,7 @@
 	</section>
 
 	<section>
-	<h3>Refactoring - d&eacute;coupler</h3>
+	<h3>Refactorer - d&eacute;coupler</h3>
 	<ul>
 	  <li>Higher order functions
 	  <li>-> injecter des fonctions
@@ -177,7 +177,7 @@
 	</section>
 
 	  <section>
-	  <h3>Configuration</h3>
+	  <h3>Configurer</h3>
 	  <ul>
 	    <li> &eacute;quivalent de factories par currying
 	  </ul>
@@ -189,16 +189,15 @@
   (let [printer (partial pretty-printer (partial finder dbname))]  
    (printer "Alice") ))
  </code></pre>
-	  <pre><code>
-lein run DBProd
+	  <pre><code>lein run DBProd
 "This is a value from the db DBProd"
 </code></pre>
 	  </section>
 
 <section>
-	  <h3>Configuration (data structure)</h3>
+	  <h3>Configurer </h3>
 	  <ul>
-	    <li> partage de la configuration
+	    <li> partage d'un contexte de configuration
             <li>alt&eacute;rable par les factories 
 	  </ul>
 	  <pre><code>
@@ -211,17 +210,16 @@ lein run DBProd
   (let [printer (partial pretty-printer finder)]  
    (printer "Alice") ))
  </code></pre>
-	  	  <pre><code>
-lein run
+	  	  <pre><code>lein run
 "This is a value from the db DBProduits"
 </code></pre>
 
 </section>
 
 	  <section>
-	  <h3>Polymorphisme</h3>
+	  <h3>Configurer</h3>
 	  <ul>
-	    <li>Protocol
+	    <li>Polymorphisme avec Protocol
 	    </ul>
 	  <pre><code>;; core
 (defprotocol Finder (finder [this arg]))
@@ -247,7 +245,7 @@ lein run
 	  </section>
 
 	    <section>
-	    <h3>Frameworkds</h3>
+	    <h3>Frameworks</h3>
 	    <ul>
 	      <li>Graph
 	      <li>Flow
@@ -271,7 +269,7 @@ lein run
 		
 	<!-- notes -->
 
-
+<section>
 
 
 

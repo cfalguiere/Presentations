@@ -35,20 +35,24 @@
       <div class="slides">
         <section>
           <h1>DI en Clojure</h1>
-          <h3>Interface 21</h3>
+          <h3>WSUG</h3>
           <h3>18 D&eacute;cembre 2013</h3>
            <p>
             <small><a
       href="https://cfalguiere.wordpress.com">Claude  &nbsp;Falgui&egrave;re</a>  &nbsp;/ &nbsp; <a href="http://twitter.com/cfalguiere">@cfalguiere</a></small>
           </p>
-	  <p> <small> exemples &nbsp;<a href="https://github.com/cfalguiere/Presentations/tree/master/Pres-DI-Clojure/demos">https://github.com/cfalguiere/Presentations/tree/master/Pres-DI-Clojure/demos</a></small></p>
+	  <p> <small> exemples &nbsp;<a href="https://github.com/cfalguiere/Clojure-di-demo">https://github.com/cfalguiere/Clojure-di-demo</a></small></p>
         </section>
 
 	<section>
+	<h3>Clojure + DI</h3>
 	  <a href="#" class="image">
             <img src="images/Perplexite.jpg" alt="Perplexit&eacute;w">
           </a>
        </section>
+
+	<section>
+	<!-- usages-->
 
 	<section>
 	<h3>Usages en Java</h3>
@@ -60,12 +64,15 @@
 	</ul>
        </section>
 
-	<!-- tests - Midje -->
+	
 	<section>
-	<h3>Stubs pour les tests - Midje</h3>
+	<h3>Framework de test Midje</h3>
 	<ul>
+	  <li>repo: <a
+	href="https://github.com/marick/Midje">https://github.com/marick/Midje</a></li>
+	  <li><code>provider</code>  pour stubber</li>
 	  <li>utilise &nbsp;<code>alter-var-root</code></li>
-	  <li>scope r&eacute;duit</li>
+	  <li>effet limit&eacute; au fact</li>
 	</ul>
 <pre><code>
 (defn finder [] #(str "value from db with " %)) 
@@ -83,20 +90,22 @@
 	<section>
 	<h3>Dynamic rebinding</h3>
 	<ul>
-	  <li>with-redefs / alter-var-root / binding
+	  <li>immutable par d&eacute;faut</lI>
+	  <li>alt&eacute;rable par <code>with-redefs</code>,
+	<code>alter-var-root</code> ou <code>binding</code></li>
 	</uL>
 	<pre><code>
 (def x 1)  ;; x -> 1
-(with-redefs [x 3] x)  ;; x -> 3
+(with-redefs [x 3] x)  ;; x -> 3 temporairement 
 </code></pre>
 	<pre><code>
 (def y 1)  ;; y -> 1
-(alter-var-root #'y inc) ;; incr&eacute;mentation atomique
+(alter-var-root #'y inc) ;; incr&eacute;mentation atomique 
 (y) ;; y -> 2
 </code></pre>
 	<pre><code>
 (def ^:dynamic z 1)
-(binding [z 4] z) ;; z -> 4 temporairement pour ce thread
+(binding [z 4] z) ;; z -> 4 temporairement et pour ce thread
 </code></pre>
 	</section>
 
@@ -119,7 +128,7 @@
 		<section>
 	<h3>Refactorer - d&eacute;coupler</h3>
 	<ul>
-	  <li> Faut il vraiment une d&eacute;pendance ?
+	  <li> Faut-il vraiment une d&eacute;pendance ?</li>
 	</ul>
 <pre><code>
 (defn finder [key] (str "value from the db")) 
@@ -163,6 +172,7 @@
 	<h3>Assembler des composants</h3>
 	<ul>
 	  <li>application partielle (curryfication)
+	  <li><code>partial</code>
 	  </ul>
 <pre><code>
 (defn finder [key] (str "value from the db")) ;; very complex finder
@@ -179,7 +189,8 @@
 	  <section>
 	  <h3>Configurer</h3>
 	  <ul>
-	    <li> &eacute;quivalent de factories par currying
+	    <li>&eacute;quivalent de DI</li>
+	    <li>assemblage par currying</li>
 	  </ul>
 	  <pre><code>
 (defn finder [dbname key] (str "value from db " dbname)) 
@@ -219,7 +230,7 @@
 	  <section>
 	  <h3>Configurer</h3>
 	  <ul>
-	    <li>Polymorphisme avec Protocol
+	    <li>Polymorphisme avec <code>Protocol</code>
 	    </ul>
 	  <pre><code>;; core
 (defprotocol Finder (finder [this arg]))
@@ -244,11 +255,28 @@
 </pre></code>
 	  </section>
 
+	</section>
+	<!-- END usages-->
+
+	<section>
+	<!-- framework -->
+
+	<section>
+	    <h2>La cours des grands</h2>
+	    <ul>
+	      <li>Services &agrave; Prismatic</li>
+	    </ul>
+	    <div>
+	    <img src="images/graph_ugly_graphs.png"/>
+	      </div>
+	    </section>
+	    
 	    <section>
 	    <h3>Frameworks</h3>
 	    <ul>
-	      <li>Graph
-	      <li>Flow
+	      <li>Graph</li>
+	      <li>Flow</li>
+	      <li>Jig</li>
 	      </ul>
 	    </section>
 
@@ -256,24 +284,100 @@
 	    <h3>Graph</h3>
 	    <ul>
 	      <li>Prismatic
-	      <li> open source ?
+	      <li>repo: <a
+	    href="https://github.com/Prismatic/plumbing">https://github.com/Prismatic/plumbing</a></li>
+	    <li>map associant des mots-cl&eacute; &agrave; des
+	    <code>fnk</code> (keywork fonctions) </li>
+	    <li>tranform&eacute; en une fonction par un compilateur</li>
 	      </ul>
+	      <pre><code>;; d&eacute;fini les op&eacute;ration et l'algorithme
+(def stats-graph
+  "A graph specifying the same computation as 'stats'"
+  {:n  (fnk [xs]   (count xs))
+   :m  (fnk [xs n] (/ (sum identity xs) n))
+   :m2 (fnk [xs n] (/ (sum #(* % %) xs) n))
+   :v  (fnk [m m2] (- m2 (* m m)))})
+
+;; compile le calcul pour 1, 2, 3, 6
+(def stats-eager (graph/eager-compile stats-graph))
+(into {} (stats-eager {:xs [1 2 3 6]})))
+
+;; resultat
+{:n 4 :m 3 :m2 (/ 25 2) :v (/ 7 2)}
+</code></pre>
 	    </section>
 
 	    <section>
 	    <h3>Flow </h3>
+	      <div style="float:right"><img
+	    src="images/myflow.png"/></div>
+	    <div>
 	      <ul>
-		<li>
+		<lI>Stuart Sierra</lI>
+		<li>repo: <a href="https://github.com/stuartsierra/flow">https://github.com/stuartsierra/flow</a></lI>
+		<li>int&eacute;gr&eacute; &agrave; graphviz</li>
 		</ul>
+		<pre><code>;; d&eacute;fini le process
+(def process-flow
+  (flow/flow
+   :result  ([gamma delta epsilon]
+               (subprocess-d gamma delta epsilon))
+   :gamma   ([alpha beta]  (subprocess-a alpha beta))
+   :delta   ([alpha gamma] (subprocess-b alpha gamma))
+   :epsilon ([gamma delta] (subprocess-c gamma delta))))
+
+;; compile le process
+(def compute (flow/compile process-flow [:alpha :beta]))
+
+(compute {:alpha 1 :beta 2})
+;;=> {:result 14, :epsilon 7, :delta 4, :gamma 3,
+;;    :alpha 1, :beta 2}
+</code></pre>
+		</div>
+	    </section>
+
+		<section>
+		<h3>Jig</h3>
+		<ul>
+		<li>repo: <a
+		href="https://github.com/juxt/jig">https://github.com/juxt/jig</a></li>
+		<li>configuration par fichier 
+		<li>gestion des d&eacute;pendances entre composants
+		<li>cycle de vie des composants (init, start, stop)
+		</ul>
+		<pre><code>;; fichier de configuration
+{:jig/components
+ {:sudoku
+  {:jig/component sudoku.jig/Website
+   :jig/project "examples/sudoku/project.clj"
+   :puzzle [8 0 0 0 0 0 0 0 0 ...
+</code></pre>
+		<pre><code>(deftype Website [config]
+  Lifecycle
+  (init [_ system] ...
+  (start [_ system] system)
+  (stop [_ system] system))
+</code></pre>
+		<pre><code>(defroutes handler
+  (GET "/sudoku.html" [:as req]
+   ...
+     (let [puzzle (-> req :jig/config :puzzle)] ...
+</code></pre>
+		</section>
+
+
+		
+		</section>
+		<!-- END framework -->
+	    <section>
+	    <h2>Questions</h2>
+	    <h4>Claude Falgui&egrave;re - @cfalguiere</h4>
 	    </section>
 		
 	<!-- notes -->
 
+		<!--
 <section>
-
-
-
-
 
 The way I've been doing DI like stuff is with Prismatic's graph[2] and
 similar libraries. While graph doesn't explicitly say it is a DI
@@ -333,63 +437,7 @@ injection. Stuart Sierra did a good talk recently on these topics at
 Clojure/West 2013, but the video is not yet available.
 </section>
 
-<section>
-Note the difference from your approach. You need to separate the management and resolution of objects from their lifecycles. Tying them to namespaces is quick for access, but it means any functions you write as clients that use that code are now accessing global state. With protocols, you can separate the implementation detail of global state from the interface of access.
 
-If you need a motivating example of why this is useful, consider, how
-would you intercept all access to a service that's globally
-accessible? Well, you would push the full implementation down and make
-the entry point a wrapper function, instead of pushing the relevant
-details closer to the client code. What if you wanted some behavior
-for some clients of the code and not others? Now you're stuck. This is
-just anticipating making those inevitable trade-offs preemptively and
-making your life easier.
-</section>
-
-<section>
-I had a similar problem with some gui code, what I ended up doing is,
-
-(defn- frame [args]
-  ((resolve 'project.gui/frame) args))
-This allowed me to resolve the call during runtime, this gets called
-  from a menu item in frame so I was 100% sure frame was defined
-  because it was being called from the frame itself, keep in mind that
-  resolve may return nil.
-</section>
-
-<section>
-separating configuration from use.
-
-ow to wire together different elements: how do you fit together this
-web controller architecture with that database interface backing when
-they were built by different teams with little knowledge of each
-other.
-
-In my book P of EAA, we described this situation as a Plugin. The implementation class for the finder isn't linked into the program at compile time, since I don't know what my friends are going to use. Instead we want my lister to work with any implementation, and for that implementation to be plugged in at some later point, out of my hands. The problem is how can I make that link so that my lister class is ignorant of the implementation class, but can still talk to an instance to do its work.
-</section>
-
-<section>
-The question, is what aspect of control are they inverting? When I first ran into inversion of control, it was in the main control of a user interface. Early user interfaces were controlled by the application program. You would have a sequence of commands like "Enter name", "enter address"; your program would drive the prompts and pick up a response to each one. With graphical (or even screen based) UIs the UI framework would contain this main loop and your program instead provided event handlers for the various fields on the screen. The main control of the program was inverted, moved away from you to the framework.
-</section>
-
-<section>
-The basic idea of the Dependency Injection is to have a separate
-object, an assembler, that populates a field in the lister class with
-an appropriate implementation for the finder interface, resulting in a
-dependency diagram along the lines of Figure 2
-Construction,Setter, interface
-</section>
-
-<section>
-The basic idea behind a service locator is to have an object that
-knows how to get hold of all of the services that an application might
-need. So a service locator for this application would have a method
-that returns a movie finder when one is needed.
-</section>
-
-<section>
-integration de libs java ?
-</section>
 
 <section>
 There are two libraries currently in development (as of Oct '12):
@@ -400,7 +448,7 @@ In any case, some Clojure applications have (apparently) become large
 enough to necessitate frameworks like this.
 plus Jig
 </section>
-
+-->
       </div>
 
     </div>

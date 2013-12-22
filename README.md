@@ -1,2 +1,4 @@
-Clojure-di
+Presentations
 ===============
+
+Clojure et DI (French)

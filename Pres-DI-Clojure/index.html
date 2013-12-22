@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>DI en Clojure</title>
+
+    <meta name="description" content="DI en Clojure">
+    <meta name="author" content="Claude Falgui&egrave;re">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="../revealjs/css/reveal.min.css">
+    <link rel="stylesheet" href="../revealjs/css/theme/default.css" id="theme">
+
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="../revealjs/lib/css/zenburn.css">
+
+    <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+    <script>
+      document.write( '<link rel="stylesheet" href="../revealjs/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    </script>
+
+  </head>
+
+  <body>
+
+    <div class="reveal">
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+        <section>
+          <h1>DI en Clojure</h1>
+          <h3>Interface 21</h3>
+          <h3>18 D&eacute;cembre 2013</h3>
+           <p>
+            <small><a
+      href="https://cfalguiere.wordpress.com">Claude  &nbsp;Falgui&egrave;re</a>  &nbsp;/ &nbsp; <a href="http://twitter.com/cfalguiere">@cfalguiere</a></small>
+          </p>
+	  <p> <small> exemples &nbsp;<a href="https://github.com/cfalguiere/Clojure-di-demo">https://github.com/cfalguiere/Clojure-di-demo</a></small></p>
+        </section>
+
+	<section>
+	  <a href="#" class="image">
+            <img src="images/Perplexite.jpg" alt="Perplexit&eacute;w">
+          </a>
+       </section>
+
+	<section>
+	<h3>Usages en Java</h3>
+	<ul>
+	  <li>mocker pour les tests</li>
+	  <li>d&eacute;coupler, modulariser</li>
+	  <li>assembler des composants qui ne se connaissent pas</li>
+	  <li>isoler la configuration</li>
+	</ul>
+       </section>
+
+	<!-- tests - Midje -->
+	<section>
+	<h3>Stubs pour les tests - Midje</h3>
+	<ul>
+	  <li>utilise &nbsp;<code>alter-var-root</code></li>
+	  <li>scope r&eacute;duit</li>
+	</ul>
+<pre><code>
+(defn finder [] #(str "value from db with " %)) 
+(defn pretty-printer [key] (str "This is a " ((finder) key) ))
+</code></pre>
+<pre><code>;; test Midge
+(fact "it should display This is a"
+  (pretty-printer "Bob") => "This is a fake value"
+  (provided
+   (finder) => (fn [key] "fake value") )) ;; test stub
+</code></pre>
+
+	</section>
+
+	<section>
+	<h3>Dynamic rebinding</h3>
+	<ul>
+	  <li>with-redefs / alter-var-root / binding
+	</uL>
+	<pre><code>
+(def x 1)  ;; x -> 1
+(with-redefs [x 3] x)  ;; x -> 3
+</code></pre>
+	<pre><code>
+(def y 1)  ;; y -> 1
+(alter-var-root #'y inc) ;; incr&eacute;mentation atomique
+(y) ;; y -> 2
+</code></pre>
+	<pre><code>
+(def ^:dynamic z 1)
+(binding [z 4] z) ;; z -> 4 temporairement pour ce thread
+</code></pre>
+	</section>
+
+	<section>
+	<h3>Dynamic rebinding de fonctions</h3>
+<pre><code>
+(defn ^:dynamic finder [key] (str "value from the db")) 
+(defn pretty-printer [key] (str "This is a " (finder key) )) 
+</code></pre>
+<pre><code>;;test
+(defn fake-finder [key] "fake value")
+
+(deftest pretty-print-with-fake
+  (is ( = "This is a fake value"
+	  (binding [finder fake-finder] ;; test stub
+	    (pretty-printer "Bob")) )))
+</code></pre>
+	</section>
+
+		<section>
+	<h3>Refactorer - d&eacute;coupler</h3>
+	<ul>
+	  <li> Faut il vraiment une d&eacute;pendance ?
+	</ul>
+<pre><code>
+(defn finder [key] (str "value from the db")) 
+(defn pretty-printer [value] (str "This is a " value)) 
+
+(defn -main [& args]
+  (pretty-printer (finder "Alice"))
+
+;; ou
+(defn -main [& args]
+  (let [value (finder "Alice")]
+	(pretty-printer value) )) 
+</code></pre>
+<pre><code>;; test
+(fact "it should display This is a"
+      (pretty-printer "fake value") => "This is a fake value")
+</code></pre>
+	</section>
+
+	<section>
+	<h3>Refactorer - d&eacute;coupler</h3>
+	<ul>
+	  <li>Higher order functions
+	  <li>-> injecter des fonctions
+	</ul>
+<pre><code>
+(defn finder [key] (str "value from the db")) 
+(defn pretty-printer [key finder] (str "This is a " (finder key) ))
+(defn -main [& args]
+  (pretty-printer "Alice" finder))
+</code></pre>
+<pre><code>;; test
+(defn fake-finder [key] "fake value")
+(fact "it should display This is a"
+      (pretty-printer "Bob" fake-finder) => "This is a fake value")
+</code></pre>
+	</section>
+
+
+	<section>
+	<h3>Assembler des composants</h3>
+	<ul>
+	  <li>application partielle (curryfication)
+	  </ul>
+<pre><code>
+(defn finder [key] (str "value from the db")) ;; very complex finder
+(defn pretty-printer [finder key] (str "This is a " (finder key)))
+
+;; application partielle
+(def all-in-one-printer (partial pretty-printer finder)) 
+
+(defn -main [& args]
+   (all-in-one-printer "Alice"))
+</code></pre>
+	</section>
+
+	  <section>
+	  <h3>Configurer</h3>
+	  <ul>
+	    <li> &eacute;quivalent de factories par currying
+	  </ul>
+	  <pre><code>
+(defn finder [dbname key] (str "value from db " dbname)) 
+(defn pretty-printer [finder key] (str "This is a " (finder key)))
+
+(defn -main [dbname]
+  (let [printer (partial pretty-printer (partial finder dbname))]  
+   (printer "Alice") ))
+ </code></pre>
+	  <pre><code>lein run DBProd
+"This is a value from the db DBProd"
+</code></pre>
+	  </section>
+
+<section>
+	  <h3>Configurer </h3>
+	  <ul>
+	    <li> partage d'un contexte de configuration
+            <li>alt&eacute;rable par les factories 
+	  </ul>
+	  <pre><code>
+(def config { :dbname "DBProduits" }) 
+
+(defn finder [key] (str "value from db " (config :dbname))) 
+(defn pretty-printer [finder key] (str "This is a " (finder key)))
+
+(defn -main [& args]
+  (let [printer (partial pretty-printer finder)]  
+   (printer "Alice") ))
+ </code></pre>
+	  	  <pre><code>lein run
+"This is a value from the db DBProduits"
+</code></pre>
+
+</section>
+
+	  <section>
+	  <h3>Configurer</h3>
+	  <ul>
+	    <li>Polymorphisme avec Protocol
+	    </ul>
+	  <pre><code>;; core
+(defprotocol Finder (finder [this arg]))
+
+(deftype FakeFinder [] Finder
+  (finder [this arg] (test8.fake/fake-finder arg)))
+
+(deftype RealFinder [] Finder
+  (finder [this arg] (test8.finder/db-finder arg)))
+
+(defn pretty-printer [value] (str "This is a "  value))
+
+(defn -main [& args]
+  (pretty-printer (finder (FakeFinder.) "Alice") ))
+</code></pre>
+<pre><code>;; fake module
+(ns test8.fake)
+(defn fake-finder [key] "fake value")
+</pre></code>
+<pre><code>lein run
+"This is a fake value"
+</pre></code>
+	  </section>
+
+	    <section>
+	    <h3>Frameworks</h3>
+	    <ul>
+	      <li>Graph
+	      <li>Flow
+	      </ul>
+	    </section>
+
+	    <section>
+	    <h3>Graph</h3>
+	    <ul>
+	      <li>Prismatic
+	      <li> open source ?
+	      </ul>
+	    </section>
+
+	    <section>
+	    <h3>Flow </h3>
+	      <ul>
+		<li>
+		</ul>
+	    </section>
+		
+	<!-- notes -->
+
+<section>
+
+
+
+
+
+The way I've been doing DI like stuff is with Prismatic's graph[2] and
+similar libraries. While graph doesn't explicitly say it is a DI
+library it certainly is solving the same problem. What is interesting
+about graph is how small it is and how it can solve problems in the
+large (like an application) but also on a much smaller scale (e.g.
+computations with a handful of functions). While graph's approach may
+not be as powerful as the huge DI frameworks in Java (I'm assuming, I
+haven't used them personally much) I think you can get 90% of the value
+with 1% of the code. I've been using a graph-like library for a number
+of months in my more complex applications and it has been fantastic.
+
+As of version 0.0.3 this has been deprecated in favour of something like
+your second option - now you pass an explicit db parameter to each
+function, where 'db' can be a db connection specification, or an explicit
+connection already created from a with-transaction macro, or a number of
+other alternatives. It's worth having a look through the source:
+https://github.com/clojure/java.jdbc/blob/165c9d2c3151a244e5a323e817edba970f6bfbb5/src/main/clojure/clojure/java/jdbc.clj#L139
+
+Even with the old API we used a
+function in a specific namespace that returned the data source (in
+fact it returned a pooled data source, using c3p0). Behind the scenes,
+we actually use an atom to provide a cached, singleton instance.
+with-redefs allows us to mock that for testing, if needed :)
+
+Clojure makes me think about my dependencies and organize them in a
+very clean top-to-bottom tree, with very clear divisions between
+subsystems. In the OO world, DI makes you sloppy... You can have
+circular dependencies. You can easily add whatever dependencies you
+need. You don't have to think about it, you can work around problems
+that crop up.
+
+I guess my (rambling) point is to reiterate that it is very easy to plaster
+over symptoms/effects using the very powerful framework beasts. The lack
+of them forces you to think, and hopefully remove the cause.
+
+This is one of the reasons we created graph:
+
+https://github.com/prismatic/plumbing
+
+which is a general declarative mechanism for describing complex function
+compositions. There's not an awesome public example yet, but we use Graph
+at Prismatic to build our production services, where each node builds a
+single component of a service, based on other named other components and
+parameters. This ends up looking somewhat similar to dependency injection,
+although the details are rather different. Basically you get the
+advantages of your second option (no global state), but hopefully without
+the 'yuck'.
+
+</section>
+
+<section>
+Stick to non side-effecting or pure functions of their parameters (verbs) as much as possible except at the topmost levels of your abstractions. You can organize those functions however you like. At the topmost levels you will have some application state, there are many approaches to manage that, but the one I use the most is to hide these top-level services under a clojure protocol, then implement it in a clojure record (which may hold references to database connections or some-such).
+This approach maximizes flexibility and prevents you from writing
+yourself into a corner. It's analagous to java's dependency
+injection. Stuart Sierra did a good talk recently on these topics at
+Clojure/West 2013, but the video is not yet available.
+</section>
+
+<section>
+Note the difference from your approach. You need to separate the management and resolution of objects from their lifecycles. Tying them to namespaces is quick for access, but it means any functions you write as clients that use that code are now accessing global state. With protocols, you can separate the implementation detail of global state from the interface of access.
+
+If you need a motivating example of why this is useful, consider, how
+would you intercept all access to a service that's globally
+accessible? Well, you would push the full implementation down and make
+the entry point a wrapper function, instead of pushing the relevant
+details closer to the client code. What if you wanted some behavior
+for some clients of the code and not others? Now you're stuck. This is
+just anticipating making those inevitable trade-offs preemptively and
+making your life easier.
+</section>
+
+<section>
+I had a similar problem with some gui code, what I ended up doing is,
+
+(defn- frame [args]
+  ((resolve 'project.gui/frame) args))
+This allowed me to resolve the call during runtime, this gets called
+  from a menu item in frame so I was 100% sure frame was defined
+  because it was being called from the frame itself, keep in mind that
+  resolve may return nil.
+</section>
+
+<section>
+separating configuration from use.
+
+ow to wire together different elements: how do you fit together this
+web controller architecture with that database interface backing when
+they were built by different teams with little knowledge of each
+other.
+
+In my book P of EAA, we described this situation as a Plugin. The implementation class for the finder isn't linked into the program at compile time, since I don't know what my friends are going to use. Instead we want my lister to work with any implementation, and for that implementation to be plugged in at some later point, out of my hands. The problem is how can I make that link so that my lister class is ignorant of the implementation class, but can still talk to an instance to do its work.
+</section>
+
+<section>
+The question, is what aspect of control are they inverting? When I first ran into inversion of control, it was in the main control of a user interface. Early user interfaces were controlled by the application program. You would have a sequence of commands like "Enter name", "enter address"; your program would drive the prompts and pick up a response to each one. With graphical (or even screen based) UIs the UI framework would contain this main loop and your program instead provided event handlers for the various fields on the screen. The main control of the program was inverted, moved away from you to the framework.
+</section>
+
+<section>
+The basic idea of the Dependency Injection is to have a separate
+object, an assembler, that populates a field in the lister class with
+an appropriate implementation for the finder interface, resulting in a
+dependency diagram along the lines of Figure 2
+Construction,Setter, interface
+</section>
+
+<section>
+The basic idea behind a service locator is to have an object that
+knows how to get hold of all of the services that an application might
+need. So a service locator for this application would have a method
+that returns a movie finder when one is needed.
+</section>
+
+<section>
+integration de libs java ?
+</section>
+
+<section>
+There are two libraries currently in development (as of Oct '12):
+Prismatic's Graph (not yet open sourced) and Flow by Stuart Sierra.
+It provides a framework for application configuration /
+modularization.
+In any case, some Clojure applications have (apparently) become large
+enough to necessitate frameworks like this.
+plus Jig
+</section>
+
+      </div>
+
+    </div>
+
+    <script src="../revealjs/lib/js/head.min.js"></script>
+    <script src="../revealjs/js/reveal.min.js"></script>
+
+    <script>
+
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+        // Optional libraries used to extend on reveal.js
+        dependencies: [
+          { src: '../revealjs/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: '../revealjs/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../revealjs/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../revealjs/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: '../revealjs/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+          { src: '../revealjs/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>

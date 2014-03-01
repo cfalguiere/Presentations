@@ -11,8 +11,5 @@ pom.xml
 
 */data.log
 
-*/.DS_Store
+.DS_Store
 
-test8/src/test8/.DS_Store
-test7/src/test7/.DS_Store
-test7/test/test7/.DS_Store

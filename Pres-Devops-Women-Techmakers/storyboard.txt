@@ -1,0 +1,114 @@
+Storyboard
+
+---
+L'état des lieux 
+- scénettes de la vie de d'un dev ... et d'un op
+
+---
+La période critique de la mise en prod et du déploiement 
+L'application est mise à disposition des utilisateurs
+
+---
+symptômes
+- peur des déploiements
+- évitement (ça marche chez moi)
+- rupture de communication
+
+---
+Deux métiers différents
+- dev : construire un produit pour des utilisateurs dans un cadre de temps donné
+Mise à disposition des utilisateurs
+- op : fournir les moyens d’infrastructure et assurer le MCO du service fourni aux utilisateurs sur le long terme
+
+confidentialité et sécurité des données 
+gestion de la montée en charge 
+engagements de disponibilité
+
+---
+Nouveauté et stabilité
+
+- imposée 
+- poids de l'engagement
+
+---
+Les différences de point de vue
+- perception du changement
+- périmètre
+- horizon de temps
+- spécialisation et silos
+
+---
+L'op est un de vos utilisateurs 
+
+- log
+- outils d'installation 
+
+- intégrer ses demandes
+
+---
+L'op est aussi un de vos fournisseurs
+
+- anticiper les demandes d'infrastructure
+
+---
+comment en faire votre meilleur ami ?
+
+- respecter le travail de l'autre
+- partager les informations
+- écouter
+- s'assurer qu'on parle bien de la même chose
+- éviter l'escalade
+
+- travailler en équipe
+
+---
+Mr Inquiet
+
+- ne pas éviter 
+- poser le problème
+- discuter des solutions
+
+---
+Réduire l'enjeu
+
+- livraisons fréquentes
+- rendre banal
+-> Livraison/Déploiement continu
+
+---
+Bonnes pratiques 
+- Intégration continu
+- Fass Fail 
+-- installer la même chose
+-- tester au plus tôt
+- Design for failure
+- KISS
+- Livraison/Déploiement continu
+
+---
+Automatiser les déploiements
+- éviter les erreurs 
+- éviter les tunnels
+
+- représentation commune
+- processus défini
+- outiller 
+- automatiser
+
+---
+Autormatiser le provisioning
+
+Infrastucture as code
+schéma Ansible et parallèle avec le schéma d'intégration continue
+
+---
+L'écosystème
+- les outils de configuration management : Puppet, Chef
+- les outils de déploiement : Fabric, Capistrano
+- les outils mixtes : Ansible, Salt
+
+---
+Exemple Ansible
+- Concepts
+- Un bout de code
+- Démo

@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>Faire un jeu avec Processing, Hermes et Leap Motion</title>
+
+    <meta name="description" content="Faire un jeu avec Processing, Hermes et Leap Motione">
+    <meta name="author" content="Claude Falgui&egrave;re">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="../revealjs/css/reveal.min.css">
+    <link rel="stylesheet" href="../revealjs/css/theme/default.css" id="theme">
+
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="../revealjs/lib/css/zenburn.css">
+
+    <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+    <script>
+      document.write( '<link rel="stylesheet" href="../revealjs/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    </script>
+
+    <style>
+.footer {
+  position: absolute; 
+  left: 15px;
+  bottom: 5px;
+}
+.reveal h7 {
+  margin: 0 0 20px 0;
+  color: #eeeeee;
+  font-family: "League Gothic", Impact, sans-serif;
+  font-size: 24px;
+  line-height: 0.9em;
+  letter-spacing: 0.06em;
+  text-shadow: 0px 0px 6px rgba(0, 0, 0, 0.2);
+}
+
+
+</style>
+
+  </head>
+
+  <body>
+
+    <div class="reveal">
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+        <section>
+          <h2>Processing, Hermes & Leap Motion</h2>
+<br>
+          <h3>Breizhcamp</h3>
+          <h3>22-23 Mai 2014</h3>
+           <p>
+            <small><a
+      href="https://cfalguiere.wordpress.com">Claude  &nbsp;Falgui&egrave;re</a>  &nbsp;/ &nbsp; <a href="http://twitter.com/cfalguiere">@cfalguiere</a></small>
+          </p>
+	  <p> <small> http://cfalguiere.github.io/Presentations/<br>
+	https://github.com/cfalguiere/Air-Breakout</small></p>
+        </section>
+
+	<section>
+	<h3>Quel type de jeu ?</h3>
+	<p><br>
+	<ul>
+	  <li>objectif p&eacute;dagogique</li>
+	  <li>pas compliqu&eacute; &agrave; impl&eacute;menter
+	  <li>des r&egrave;gles connues</li>
+	  <li>permettant d'exploiter diverses fonctions de la Leap
+	Motion (Mouvement, Inclination, Gesture)
+	  </ul>
+	  </p>
+	</section>
+
+	<section>
+	<section>
+	<h3>Processing</h3>
+	  <p><a href="http://www.processing.org/">http://www.processing.org/</a></p>
+	  <p>
+	  <br>
+	  <ul>
+	  <li>Open Source</li>
+	  <li>Outil pour prototyper et apprendre la
+	programmation</li>
+	  <li>Production d'animation, IDE Arduino</li>
+	  <li>Java avec quelques simplification et des API
+	sp&eacute;cifiques</li>
+	<li>Orient&eacute; graphisme, animation, audio</li>
+	<li>Tr&egrave;s document&eacute;, communaut&eacute; et site de
+	publication</li>
+	</ul>
+	</p>
+	</section>
+
+		<section>
+	<h3>L'IDE</h3>
+	<img src="images/processing/firstSketch.png" />
+	</section>
+
+	<section>
+	<h3>Demo</h3>
+	<img src="images/processing/secondSketch.png" />
+	</section>
+
+	<section>
+	<h3>Demo</h3>
+	<img src="images/processing/thirdSketch1.png" />
+	<img src="images/processing/thirdSketch2.png" />
+	</section>
+
+
+
+	</section><!-- Processing -->
+	
+	<section>
+	<section>
+	<h3>Hermes</h3>
+	  <p><a href="http://rdlester.github.io/hermes/">http://rdlester.github.io/hermes//</a></p>
+	  <p>
+	  <br>
+	  <ul>
+	  <li>Game Engine 2D</li>
+	  <li>MVC</li>
+	  <li>Propagation des &eacute;v&egrave;nements entre les classes</li>
+	  <li>Moteur Physque</li>
+	</ul>
+	</p>
+	</section>
+
+		<section>
+	<h3>Concepts Principaux</h3>
+	  <p>
+	  <br>
+	  <ul>
+	  <li>World</li>
+	  <li>Being</li>
+	  <li>Group</li>
+	  <li>Interactor / Collider</li>
+	  <li>PostOffice</li>
+	</ul>
+	</p>
+	</section>
+
+	<section>
+	<h3>Main</h3>
+	<img src="images/hermes/PApplet.png" height="380"/>
+	</section>
+
+	<section>
+	<h3>Being</h3>
+	<img src="images/hermes/Being.png" height="470"/>
+	</section>
+
+	<section>
+	<h3>World</h3>
+	<img src="images/hermes/World.png" height="500"/>
+	</section>
+
+	<section>
+	<h3>Update / Draw</h3>
+	<img src="images/hermes/update.png" height="500"/>
+	</section>
+
+	<section>
+	<h3>Model</h3>
+	<img src="images/model.png" height="500"/>
+	</section>
+
+	<section>
+	<h3>Messages and interactions</h3>
+	<img src="images/messaging.png" height="500"/>
+	</section>
+
+	<section>
+	<h3>Collider</h3>
+	<img src="images/hermes/collider.png" height="400"/>
+	</section>
+
+	<section>
+	<h3>Messaging</h3>
+	<img src="images/hermes/messaging.png" height="450"/>
+	</section>
+
+	<section>
+	<h3>OSC Messages</h3>
+	<img src="images/hermes/OSC.png" height="500"/>
+	</section>
+
+	</section><!-- Hermes -->
+
+	<section>
+	<section>
+	<h3>Leap Motion</h3>
+	  <p><a href="https://www.leapmotion.com/">https://www.leapmotion.com/</a></p>
+	  <p><a href="https://developer.leapmotion.com/">https://developer.leapmotion.com/</a></p>
+	
+	<img src="images/leapmotion/set.png" height="400"/>
+	</section>
+
+
+		<section>
+	<h3>Coordonn&eacute;es</h3>
+	<img src="images/leapmotion/axes.png"  height="300"/>
+	<img src="images/leapmotion/hand.jpg" height="250"/>
+	  
+	</section>
+
+			<section>
+	<h3>Pointable</h3>
+	<img src="images/leapmotion/finger.png"  height="300"/>
+	<img src="images/leapmotion/tool.png" height="250"/>
+	  
+	</section>
+
+			<section>
+	<h3>API</h3>
+	  <p>Bindings : JavaScript, Unity/C#, Java, C++, Python,
+	Objective-C 
+	<br>
+	<br>
+	<ul>
+	  <li>Controller</li>
+	  <li>Frame</li>
+	  <li>Hand</li>
+	  <li>Finger</li>
+	  <li>Tool</li>
+	  <li>Gesture</li>
+	  <li>Device</li>
+	  </ul>
+	  </p>
+	</section>
+
+			<section>
+	<h3>Leap Motion For Processing</h3>
+	<img src="images/leapmotion/LeapMotionForProcessing.png"  height="600"/>
+	</section>
+			<section>
+	<h3>Leap Motion For Processing - Gestures</h3>
+	<img src="images/leapmotion/LeapMotionForProcessingGestures.png"  height="600"/>
+	</section>
+
+			<section>
+	<h3>Int&eacute;gration dans Hermes</h3>
+	  <ul>
+	    <li>World isol&eacute; (thread isol&eacute;)</li>
+	    <li>Echanges via OSC</li>
+	    <li>Lecture directe des gestures</li>
+	</section>
+	    
+			<section>
+	<h3>Leap World</h3>
+	<img src="images/leapmotion/LeapWorld.png"  height="570"/>
+	</section>
+
+			<section>
+	<h3>Leap World - Gestures</h3>
+	<img src="images/leapmotion/LeapWorldGestures.png"  height="570"/>
+	</section>
+
+	</section><!-- Leap Motion -->
+
+	    <section>
+	    <h2>Questions</h2>
+	    <br>
+	    <br>
+	    <h7>Claude Falgui&egrave;re</h7>
+	    <br>
+	    <h7>@cfalguiere</h7>
+	    <bR>
+	    <h7>http://cfalguiere.wordpress.com</h7>
+	    
+	    </section>
+		
+	<!-- notes -->
+
+	
+
+      </div><!-- slides -->
+
+      <div class="footer">
+           <h7 class="footerp">#Breizhcamp @cfalguiere</h7>
+         </div>
+    </div><!-- reveal -->
+
+    <script src="../revealjs/lib/js/head.min.js"></script>
+    <script src="../revealjs/js/reveal.min.js"></script>
+
+    <script>
+
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+        // Optional libraries used to extend on reveal.js
+        dependencies: [
+          { src: '../revealjs/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: '../revealjs/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../revealjs/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../revealjs/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: '../revealjs/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+          { src: '../revealjs/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>

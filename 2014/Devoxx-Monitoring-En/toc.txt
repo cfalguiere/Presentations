@@ -1,0 +1,41 @@
+what is monitoring
+real world 
+devops / lean startup / Bigdata
+number / metric / information   
+
+
+supervision 
+- not monitoring 
+- alerting 
+- CEP 
+- whether raising an alert, who is the recipient
+
+monitoring 
+- what, when, what
+
+devops 
+- histoire des avis contradictoires
+- illustration : sitos
+- explication du problème qui est du au firewlall 
+- qu'est ce qu'on fait quand les mesures ne correspondent pas 
+- mesure des 2 cotés et écarts
+- remise en cause des mesures
+- remise en cause du modèle (la waiting line)
+- funel assumptions ( time spent in request >, other sources, 
+- découverte d'un truc au milieu
+
+Lean startup 
+- découvrir ses utilisateurs 
+- cage de perroquet ? 
+- readings + hypothesis -> model -> validated model -> decision 
+- measure everything : define what you want
+
+Big Data 
+- éviter le big data par manque de préparation 
+- data munging
+
+Tooling
+- acquisition / storage / visualization 
+- graphite  : fixed size
+- elk : big data
+

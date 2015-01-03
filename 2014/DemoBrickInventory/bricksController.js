@@ -14,8 +14,8 @@ angular.module('BrickInventoryApp.controllers', [])
 
     $scope.found = function(brick) {
 	    //alert("Found " + brick.itemName);
-      brick.count++;
-      brick.show = (brick.count < brick.quantity);
+      brick.count++
+      brick.show = brick.count < brick.item.quantity
     };
 
     $scope.filterByColor = function(selectedColor) {

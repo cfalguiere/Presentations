@@ -41,14 +41,27 @@ angular.module('BrickInventoryApp.loaders', [])
     this.load = function() {
       var itemList = [ ]
 
-      itemList.push( parseLine("S	9581-1	WeDo Robotics USB Hub	1	0	N	N	0	N") )
-      itemList.push( parseLine("S	9583-1	WeDo Robotics Motion Sensor	1	0	N	N	0	N") )
-      itemList.push( parseLine("S	9584-1	WeDo Robotics Tilt Sensor	1	0	N	N	0	N") )
-      itemList.push( parseLine("S	8883-1	Power Functions M-Motor	1	0	N	N	0	N") )
+      angular.forEach( kit, function( line ) {
+          itemList.push(parseLine( line ))
+      })
 
-      itemList.push( parseLine("P	3003	Brick 2 x 2	2	5	N	N	0	N") )
-
-      return itemList;
+      return itemList
     }
+
+
+    var kit = [
+      "S	9581-1	WeDo Robotics USB Hub	1	0	N	N	0	N",
+      "S	9583-1	WeDo Robotics Motion Sensor	1	0	N	N	0	N",
+      "S	9584-1	WeDo Robotics Tilt Sensor	1	0	N	N	0	N",
+      "S	8883-1	Power Functions M-Motor	1	0	N	N	0	N",
+      "P	x127c41	String with End Studs 41L Overall	1	11	N	N	0	N",
+      "P	6588	Technic, Gearbox 2 x 4 x 3 1/3	1	12	N	N	0	N",
+      "P	x90	Rubber Belt Extra Large &#40;Round Cross Section&#41; - Approx. 5 x 5	2	3	N	N	0	N",
+      "P	4185	Technic Wedge Belt Wheel (Pulley)	2	34	N	N	0	N",
+      "P	70162	Technic Wedge Belt Wheel Tire	2	11	N	N	0	N",
+
+      "P	3003	Brick 2 x 2	2	5	N	N	0	N"
+    ]
+
 
 })

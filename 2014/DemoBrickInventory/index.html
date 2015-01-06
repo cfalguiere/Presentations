@@ -9,6 +9,7 @@ x.addEventListener("change", myFocusFunction, true);
 
 function myFocusFunction() {
 	document.getElementById("shapeSelect").blur();
+	document.getElementById("shapeSelect").change();
 	document.getElementById("filters").style.backgroundColor = "yellow";
 }
 
@@ -36,9 +37,9 @@ function myFocusFunction() {
                         ng-click="filterByColor(selectedColor)" onchange="this.blur()">
                     <option value="">-- choose color --</>
                     </select>
-                <select id="shapeSelect" onChange="this.blur()" onSubmit="this.blur()"
+                <select id="shapeSelect" onChange="this.blur()" onSubmit="this.blur();this.change()"
 		        ng-model="selectedShape" ng-options="shape for shape in shapesList"
-                        ng-click="filterByShape(selectedShape);this.blur();this.submit()" >
+                        ng-click="filterByShape(selectedShape);this.blur();this.change()" >
                     <option value="">-- choose shape --</>
                     </select>
             </form>

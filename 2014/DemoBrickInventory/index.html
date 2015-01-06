@@ -35,12 +35,12 @@ function myFocusFunction() {
                         ng-click="filterByColor(selectedColor)" onchange="this.blur()">
                     <option value="">-- choose color --</>
                     </select>
+            </form>
                 <select id="shapeSelect"
 		        ng-model="selectedShape" ng-options="shape for shape in shapesList"
                         ng-click="filterByShape(selectedShape);this.blur()" >
                     <option value="">-- choose shape --</>
                     </select>
-            </form>
          </div>
 
          <div class="panel-body">

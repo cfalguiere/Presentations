@@ -22,11 +22,11 @@
                 &nbsp;
                 <input type="submit" value="Reset Filters">
                 <select ng-model="selectedColor" ng-options="color.name for color in colorsList"
-                        ng-click="filterByColor(selectedColor)">
+                        ng-click="filterByColor(selectedColor)" onchange="this.blur()">
                     <option value="">-- choose color --</>
                     </select>
                 <select ng-model="selectedShape" ng-options="shape for shape in shapesList"
-                        ng-click="filterByShape(selectedShape)">
+                        ng-click="filterByShape(selectedShape)" onchange="this.blur()">
                     <option value="">-- choose shape --</>
                     </select>
             </form>
@@ -63,10 +63,10 @@
         <td ng-click="found(brick)"><img src="img/bricks/{{brick.item.itemId}}.gif" /></td>
         <td>{{brick.count}}/{{brick.item.quantity}} </td>
           <td>{{brick.item.groupName}}  <br>
-              <button class="btn btn-default"  onchange="this.blur()"
+              <button class="btn btn-default"  
   ng-click="filterByShape(brick.item.groupName)" >Same</button> </td>
         <td>{{brick.colorName}} <br>
-              <button class="btn btn-default" onchange="this.blur()"
+              <button class="btn btn-default" 
   ng-click="filterByColorId(brick.item.colorId)">Same</button></td>
         <td>{{brick.item.itemName}}</td>
 	    <!-- <td>{{brick.item.itemId}}</td>  -->

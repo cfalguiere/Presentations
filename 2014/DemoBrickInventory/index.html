@@ -26,7 +26,7 @@
                     <option value="">-- choose color --</>
                     </select>
                 <select ng-model="selectedShape" ng-options="shape for shape in shapesList"
-                        ng-click="filterByShape(selectedShape)" onchange="this.blur()">
+                        ng-click="filterByShape(selectedShape);this.blur()" >
                     <option value="">-- choose shape --</>
                     </select>
             </form>

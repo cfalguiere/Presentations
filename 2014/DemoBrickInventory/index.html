@@ -64,10 +64,10 @@
         <td>{{brick.count}}/{{brick.item.quantity}} </td>
           <td>{{brick.item.groupName}}  <br>
               <button class="btn btn-default"
-  ng-click="filterByShape(brick.item.groupName)" onchange="blur()">Same</button> </td>
+  ng-click="filterByShape(brick.item.groupName)" onchange="this.blur()">Same</button> </td>
         <td>{{brick.colorName}} <br>
               <button class="btn btn-default"
-  ng-click="filterByColorId(brick.item.colorId)" onchange="blur()">Same</button></td>
+  ng-click="filterByColorId(brick.item.colorId)" onchange="this.blur()">Same</button></td>
         <td>{{brick.item.itemName}}</td>
 	    <!-- <td>{{brick.item.itemId}}</td>  -->
 	    <!-- <td>{{brick.item.itemType}}</td>  -->

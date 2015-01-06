@@ -34,7 +34,7 @@ function myFocusFunction() {
                 &nbsp;
                 <input id="filters" type="submit" value="Reset Filters">
                 <select ng-model="selectedColor" ng-options="color.name for color in colorsList"
-                        ng-click="filterByColor(selectedColor)" onchange="this.blur()">
+                        ng-click="filterByColor(selectedColor)" >
                     <option value="">-- choose color --</>
                     </select>
                 <select id="shapeSelect" onChange="this.blur()" onSubmit="this.blur();this.change()"

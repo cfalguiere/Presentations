@@ -36,9 +36,9 @@ function myFocusFunction() {
                         ng-click="filterByColor(selectedColor)" onchange="this.blur()">
                     <option value="">-- choose color --</>
                     </select>
-                <select id="shapeSelect" onChange="this.blur()"
+                <select id="shapeSelect" onChange="this.blur()" onSubmit="this.blur()"
 		        ng-model="selectedShape" ng-options="shape for shape in shapesList"
-                        ng-click="filterByShape(selectedShape);this.blur()" >
+                        ng-click="filterByShape(selectedShape);this.blur();this.submit()" >
                     <option value="">-- choose shape --</>
                     </select>
             </form>

@@ -3,6 +3,16 @@
 <head>
     <title>Brick Inventory</title>
     <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+	<script>
+var x = document.getElementById("shapeSelect");
+x.addEventListener("change", myFocusFunction, true);
+
+function myFocusFunction() {
+	document.getElementById("shapeSelect").blur();
+	document.getElementById("filters").style.backgroundColor = "yellow";
+}
+
+</script>
 </head>
 
 <body ng-app="BrickInventoryApp" ng-controller="bricksController" >
@@ -15,16 +25,7 @@
             </form>
         </div>
 
-	<script>
-var x = document.getElementById("shapeSelect");
-x.addEventListener("change", myFocusFunction, true);
 
-function myFocusFunction() {
-	document.getElementById("shapeSelect").blur();
-	document.getElementById("filters").style.backgroundColor = "yellow";
-}
-
-</script>
         <div class="panel-body">
             <form ng-submit="resetFilters()" >
                 &nbsp;
@@ -35,12 +36,12 @@ function myFocusFunction() {
                         ng-click="filterByColor(selectedColor)" onchange="this.blur()">
                     <option value="">-- choose color --</>
                     </select>
-            </form>
                 <select id="shapeSelect"
 		        ng-model="selectedShape" ng-options="shape for shape in shapesList"
                         ng-click="filterByShape(selectedShape);this.blur()" >
                     <option value="">-- choose shape --</>
                     </select>
+            </form>
          </div>
 
          <div class="panel-body">

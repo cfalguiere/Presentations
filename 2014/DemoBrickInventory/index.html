@@ -63,11 +63,11 @@
         <td ng-click="found(brick)"><img src="img/bricks/{{brick.item.itemId}}.gif" /></td>
         <td>{{brick.count}}/{{brick.item.quantity}} </td>
           <td>{{brick.item.groupName}}  <br>
-              <button class="btn btn-default"
-  ng-click="filterByShape(brick.item.groupName)" onchange="this.blur()">Same</button> </td>
+              <button class="btn btn-default"  onchange="this.blur()"
+  ng-click="filterByShape(brick.item.groupName)" >Same</button> </td>
         <td>{{brick.colorName}} <br>
-              <button class="btn btn-default"
-  ng-click="filterByColorId(brick.item.colorId)" onchange="this.blur()">Same</button></td>
+              <button class="btn btn-default" onchange="this.blur()"
+  ng-click="filterByColorId(brick.item.colorId)">Same</button></td>
         <td>{{brick.item.itemName}}</td>
 	    <!-- <td>{{brick.item.itemId}}</td>  -->
 	    <!-- <td>{{brick.item.itemType}}</td>  -->

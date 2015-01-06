@@ -17,10 +17,10 @@
 
 	<script>
 var x = document.getElementById("shapeSelect");
-x.addEventListener("focus", myFocusFunction, true);
+x.addEventListener("change", myFocusFunction, true);
 
 function myFocusFunction() {
-    document.getElementById("filters").style.backgroundColor = "yellow";
+    document.getElementById("shapeSelect").blur();
 }
 
 </script>

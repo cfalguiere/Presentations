@@ -15,17 +15,26 @@
             </form>
         </div>
 
+	<script>
+var x = document.getElementById("shapeSelect");
+x.addEventListener("focus", myFocusFunction, true);
+
+function myFocusFunction() {
+    document.getElementById("filters").style.backgroundColor = "yellow";
+}
+
+</script>
         <div class="panel-body">
             <form ng-submit="resetFilters()" >
                 &nbsp;
                 Filters:
                 &nbsp;
-                <input type="submit" value="Reset Filters">
+                <input id="filters" type="submit" value="Reset Filters">
                 <select ng-model="selectedColor" ng-options="color.name for color in colorsList"
                         ng-click="filterByColor(selectedColor)" onchange="this.blur()">
                     <option value="">-- choose color --</>
                     </select>
-                <select onFocus="this.style.backgroundColor = "yellow""
+                <select id="shapeSelect"
 		        ng-model="selectedShape" ng-options="shape for shape in shapesList"
                         ng-click="filterByShape(selectedShape)" >
                     <option value="">-- choose shape --</>
